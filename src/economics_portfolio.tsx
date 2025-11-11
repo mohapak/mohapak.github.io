@@ -849,7 +849,7 @@ const EconomicsPortfolio: React.FC = () => {
               <div className="md:col-span-5">
                 <div className="flex flex-wrap gap-3">
                   <a 
-                    href="https://www.linkedin.com/in/mohammad-pakravan-5b7a74176/" 
+                    href="https://www.linkedin.com/in/mohammad-pak/" 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800"
