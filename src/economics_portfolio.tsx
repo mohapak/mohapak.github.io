@@ -123,52 +123,42 @@ const Modal: React.FC<ModalProps> = ({ paper, onClose }) => {
   if (!paper) return null;
 
   return (
-    <AnimatePresence>
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.25 }}
+    >
+      {/* Backdrop */}
       <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        onClick={onClose}
+        className="absolute inset-0 bg-black/60"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.2, ease: 'easeIn' }}
-      >
-        {/* Backdrop */}
-        <motion.div
-          className="absolute inset-0 bg-black/60"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2, ease: 'easeIn' }}
-        />
+        transition={{ duration: 0.25 }}
+        onClick={onClose}
+      />
 
-        {/* Dialog panel */}
-        <motion.div
-          ref={modalRef}
-          className="relative bg-white dark:bg-slate-900 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
-          onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
-          initial={{ opacity: 0, scale: 0.95, y: 12 }}
-          animate={{ 
-            opacity: 1, 
-            scale: 1, 
-            y: 0,
-            transition: { 
-              duration: 0.2, 
-              ease: 'easeOut' 
-            }
-          }}
-          exit={{ 
-            opacity: 0, 
-            scale: 0.95, 
-            y: 12,
-            transition: { 
-              duration: 0.2, 
-              ease: 'easeIn' 
-            }
-          }}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="paper-title"
-        >
+      {/* Dialog panel */}
+      <motion.div
+        ref={modalRef}
+        className="relative bg-white dark:bg-slate-900 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.95, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.98, y: 8 }}
+        transition={{ 
+          type: "spring",
+          damping: 25,
+          stiffness: 300,
+          mass: 0.5
+        }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="paper-title"
+      >
           <div className="sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-700 p-6 z-10">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
@@ -235,7 +225,6 @@ const Modal: React.FC<ModalProps> = ({ paper, onClose }) => {
           </div>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
   );
 };
 
@@ -941,10 +930,15 @@ const EconomicsPortfolio: React.FC = () => {
           )}
 
           {/* Modal with smooth closing animation */}
-          <Modal 
-            paper={selectedPaper} 
-            onClose={() => setSelectedPaper(null)} 
-          />
+          <AnimatePresence>
+            {selectedPaper && (
+              <Modal 
+                key="research-modal"
+                paper={selectedPaper} 
+                onClose={() => setSelectedPaper(null)} 
+              />
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </>
