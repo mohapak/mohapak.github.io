@@ -655,7 +655,7 @@ const EconomicsPortfolio: React.FC = () => {
                 <div className="relative">
                   <div className="aspect-square rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 shadow-2xl">
                     <img
-                      src="/assets/images/my-pic-no.png"
+                      src="/assets/images/pic_aca_5.png"
                       alt="Mohammad Mehdi Pakravan"
                       className="w-full h-full object-cover"
                       loading="lazy"
