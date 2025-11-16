@@ -829,7 +829,7 @@ const EconomicsPortfolio: React.FC = () => {
                 transition={{ duration: 0.25, ease: 'easeOut' }}
               >
                 <BoardNetworkGraph
-                  dataUrl={`/data/board_network_${year}.json`}
+                  dataUrl={`/data/board_network_${year}_no_isolates.json`}
                   height={600}
                   minRadius={4}
                   maxRadius={16}

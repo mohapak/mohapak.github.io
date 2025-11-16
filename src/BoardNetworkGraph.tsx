@@ -242,7 +242,7 @@ const BoardNetworkGraph: React.FC<Props> = ({
           .text(d => d.label ?? d.id)
           .attr('x', d => r(d.size ?? 8) + 3)
           .attr('y', 3)
-          .attr('font-size', 11)
+          .attr('font-size', 8)
           .attr('opacity', 0)
           .attr('fill', labelFill)
           .attr('paint-order', 'stroke')
