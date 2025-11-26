@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Board Network Visualization - Thesis Defense</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
@@ -10,6 +10,10 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
@@ -162,6 +166,8 @@
       width: 100%;
       cursor: grab;
       background: radial-gradient(circle at center, #ffffff 0, #eff6ff 50%, #e5e7eb 100%);
+      touch-action: pan-y; /* allow vertical scrolling on touch devices */
+      min-height: 320px;
     }
 
     #network:active {
@@ -177,6 +183,7 @@
       padding: 1.4rem 1.3rem 1.5rem;
       overflow-y: auto;
       color: #e5e7eb;
+      max-height: none;
     }
 
     .sidebar h3 {
@@ -221,26 +228,65 @@
       color: #e5e7eb;
     }
 
+    /* Tooltip: redesigned for clarity & readability */
     .tooltip {
       position: absolute;
       pointer-events: none;
       opacity: 0;
-      background: rgba(15, 23, 42, 0.96);
+      background: rgba(15, 23, 42, 0.97);
       color: #f9fafb;
-      padding: 0.6rem 0.9rem;
-      border-radius: 0.75rem;
-      font-size: 0.8rem;
-      line-height: 1.4;
-      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.65);
+      padding: 0.7rem 0.95rem;
+      border-radius: 0.9rem;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.7);
       transition: opacity 0.15s ease-out;
-      max-width: 260px;
+      max-width: 280px;
       z-index: 1000;
-      border: 1px solid rgba(148, 163, 184, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      backdrop-filter: blur(6px);
+      white-space: normal;
     }
 
-    .tooltip strong {
-      display: block;
-      margin-bottom: 0.15rem;
+    .tooltip-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 0.25rem;
+      color: #e5e7eb;
+    }
+
+    .tooltip-subtitle {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #9ca3af;
+      margin-bottom: 0.4rem;
+    }
+
+    .tooltip-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      font-size: 0.82rem;
+      color: #cbd5f5;
+    }
+
+    .tooltip-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(37, 99, 235, 0.26);
+      color: #bfdbfe;
+      margin-right: 0.3rem;
+    }
+
+    .tooltip-separator {
+      margin: 0.35rem 0;
+      border-top: 1px solid rgba(55, 65, 81, 0.9);
     }
 
     .loading {
@@ -262,7 +308,9 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     .loading-text {
@@ -290,10 +338,13 @@
     @media (max-width: 1024px) {
       .container {
         padding: 1rem;
+        flex-direction: column;
       }
 
       .sidebar {
-        display: none;
+        width: 100%;
+        margin-top: 1rem;
+        max-height: none;
       }
 
       .header {
@@ -313,6 +364,14 @@
 
       .container {
         padding: 0.75rem;
+      }
+
+      .header h1 {
+        font-size: 1.1rem;
+      }
+
+      .header p {
+        font-size: 0.8rem;
       }
     }
   </style>
@@ -340,11 +399,11 @@
             <option value="2024" selected>2024 (1403)</option>
           </select>
         </div>
-        
+
         <button id="resetBtn">Reset View</button>
         <button id="centerBtn">Center Network</button>
       </div>
-      
+
       <div class="year-badge" id="yearBadge">2024</div>
       <svg id="network"></svg>
       <div class="loading">
@@ -355,7 +414,7 @@
 
     <div class="sidebar">
       <h3>Network Statistics</h3>
-      
+
       <div class="stat-card">
         <div class="stat-label">Total Firms</div>
         <div class="stat-value" id="totalNodes">0</div>
@@ -378,18 +437,29 @@
 
       <h3 style="margin-top: 2rem;">How to Interact</h3>
       <div class="info-text">
-        <p style="margin-bottom: 0.75rem;"><strong>📅 Select Year</strong> to view different periods.</p>
-        <p style="margin-bottom: 0.75rem;"><strong>🖱️ Drag</strong> nodes to reposition them.</p>
-        <p style="margin-bottom: 0.75rem;"><strong>🔍 Scroll</strong> to zoom in and out of the network.</p>
-        <p style="margin-bottom: 0.75rem;"><strong>👆 Hover</strong> over nodes or links for details.</p>
-        <p><strong>🎯 Reset View</strong> to restore the initial framing.</p>
+        <p style="margin-bottom: 0.75rem;">
+          <strong>📅 Select Year</strong> to view different periods of the board network.
+        </p>
+        <p style="margin-bottom: 0.75rem;">
+          <strong>🖱️ Desktop:</strong> drag nodes, zoom with the mouse wheel, and pan the network.
+        </p>
+        <p style="margin-bottom: 0.75rem;">
+          <strong>📱 Mobile:</strong> scroll the page normally, tap nodes or links to view details.
+        </p>
+        <p>
+          <strong>🎯 Reset View</strong> re-centers and resets zoom on the network.
+        </p>
       </div>
 
       <h3 style="margin-top: 2rem;">Metrics</h3>
       <div class="info-text">
-        <p style="margin-bottom: 0.75rem;">• <strong>Node size:</strong> Number of board connections.</p>
-        <p style="margin-bottom: 0.75rem;">• <strong>Link thickness:</strong> Shared directors between firms.</p>
-        <p>• <strong>Colors:</strong> Encodes network role / connectivity.</p>
+        <p style="margin-bottom: 0.75rem;">
+          • <strong>Node size:</strong> Number of board connections.
+        </p>
+        <p style="margin-bottom: 0.75rem;">
+          • <strong>Link thickness:</strong> Number of shared directors between firms.
+        </p>
+        <p>• <strong>Colors:</strong> Firms Sector</p>
       </div>
     </div>
   </div>
@@ -401,13 +471,14 @@
     let transform = d3.zoomIdentity;
     let svg, g, zoom;
     let resizeHandler = null;
-    
+    let tooltipPinned = false;
+
     // Elements
     const yearSelect = document.getElementById('yearSelect');
     const yearBadge = document.getElementById('yearBadge');
     const loading = d3.select('.loading');
     const tooltip = d3.select('body').append('div').attr('class', 'tooltip');
-    
+
     // Tooltip positioning helper (keeps tooltip fully visible)
     function positionTooltip(event) {
       const tooltipNode = tooltip.node();
@@ -433,40 +504,93 @@
       tooltip.style('left', `${x}px`).style('top', `${y}px`);
     }
 
+    function showNodeTooltip(event, d) {
+      const title = d.label || d.id || 'Node';
+      const size = d.size != null ? d.size : '—';
+      tooltip
+        .style('opacity', 1)
+        .html(`
+          <div class="tooltip-subtitle">Firm</div>
+          <div class="tooltip-title">${title}</div>
+          <div class="tooltip-separator"></div>
+          <div class="tooltip-row">
+            <span class="tooltip-chip">Connections</span>
+            <span>${size}</span>
+          </div>
+          ${d.id ? `<div class="tooltip-row"><span class="tooltip-chip">ID</span><span>${d.id}</span></div>` : ''}
+        `);
+      positionTooltip(event);
+    }
+
+    function showLinkTooltip(event, d, dataNodes) {
+      function getNodeLabel(nodeLike) {
+        if (typeof nodeLike === 'string' || typeof nodeLike === 'number') {
+          const match = dataNodes.find(n => n.id === nodeLike);
+          return match ? (match.label || match.id) : nodeLike;
+        }
+        return nodeLike.label || nodeLike.id;
+      }
+
+      const sourceLabel = getNodeLabel(d.source);
+      const targetLabel = getNodeLabel(d.target);
+      const shared = d.weight || d.value || null;
+
+      tooltip
+        .style('opacity', 1)
+        .html(`
+          <div class="tooltip-subtitle">Board Interlock</div>
+          <div class="tooltip-title">${sourceLabel} ⟷ ${targetLabel}</div>
+          <div class="tooltip-separator"></div>
+          <div class="tooltip-row">
+            <span class="tooltip-chip">Shared Directors</span>
+            <span>${shared != null ? shared : '—'}</span>
+          </div>
+        `);
+      positionTooltip(event);
+    }
+
     // Initialize
     svg = d3.select('#network');
-    
+
     // Year change handler
     yearSelect.addEventListener('change', (e) => {
       currentYear = e.target.value;
       loadYear(currentYear);
     });
-    
+
+    // Hide pinned tooltip on background click (desktop & mobile)
+    svg.on('click', () => {
+      if (tooltipPinned) {
+        tooltipPinned = false;
+        tooltip.style('opacity', 0);
+      }
+    });
+
     // Load initial year
     loadYear(currentYear);
-    
+
     function loadYear(year) {
       // Show loading
       loading.style('display', 'block');
       loading.select('.loading-text').text('Loading network data...');
       loading.select('.loading-spinner').style('display', 'block');
       yearBadge.textContent = year;
-      
+
       // Disable controls
       document.getElementById('resetBtn').disabled = true;
       document.getElementById('centerBtn').disabled = true;
-      
+
       // Clear previous network
       if (simulation) {
         simulation.stop();
       }
       svg.selectAll('*').remove();
-      
+
       // Load data
       const dataUrl = `/data/board_network_${year}_no_isolates.json`;
-    
+
       d3.json(dataUrl)
-        .then(data => {
+        .then((data) => {
           loading.style('display', 'none');
           // Update stats
           const nodes = data.nodes.length;
@@ -474,19 +598,19 @@
           const avgDegree = (links * 2 / nodes).toFixed(1);
           const maxPossibleLinks = (nodes * (nodes - 1)) / 2;
           const density = ((links / maxPossibleLinks) * 100).toFixed(2);
-          
+
           document.getElementById('totalNodes').textContent = nodes;
           document.getElementById('totalLinks').textContent = links;
           document.getElementById('avgDegree').textContent = avgDegree;
           document.getElementById('density').textContent = density + '%';
-          
+
           // Enable controls
           document.getElementById('resetBtn').disabled = false;
           document.getElementById('centerBtn').disabled = false;
-          
+
           renderNetwork(data);
         })
-        .catch(err => {
+        .catch((err) => {
           loading.select('.loading-text').text(`Failed to load data for ${year}. File may not exist.`);
           loading.select('.loading-spinner').style('display', 'none');
           console.error(err);
@@ -502,22 +626,13 @@
       svg.attr('viewBox', [0, 0, width, height]);
 
       // Scales
-      const sizes = data.nodes.map(n => n.size || 10);
+      const sizes = data.nodes.map((n) => n.size || 10);
       const rScale = d3.scaleSqrt()
         .domain([d3.min(sizes) || 1, d3.max(sizes) || 20])
         .range([5, 20]);
 
       // Root group
       g = svg.append('g');
-
-      // Helper to get node label for link tooltip
-      function getNodeLabel(nodeLike) {
-        if (typeof nodeLike === 'string' || typeof nodeLike === 'number') {
-          const match = data.nodes.find(n => n.id === nodeLike);
-          return match ? (match.label || match.id) : nodeLike;
-        }
-        return nodeLike.label || nodeLike.id;
-      }
 
       // Links (more visible styling)
       const link = g.append('g')
@@ -526,9 +641,20 @@
         .data(data.links)
         .join('line')
         .attr('stroke', '#64748b')
-        .attr('stroke-opacity', 0.85)
-        .attr('stroke-width', d => 1.2 + Math.sqrt(d.weight || 1))
+        .attr('stroke-opacity', 0.9)
+        .attr('stroke-width', (d) => 1.4 + Math.sqrt(d.weight || 1))
         .attr('stroke-linecap', 'round');
+
+      // Drag behavior (mouse only; disabled on touch for better scrolling)
+      const dragBehavior = d3.drag()
+        .filter((event) => {
+          const pointerType = event.pointerType;
+          if (pointerType === 'touch') return false; // allow native scrolling
+          return !event.button || event.button === 0; // left mouse button
+        })
+        .on('start', dragstarted)
+        .on('drag', dragged)
+        .on('end', dragended);
 
       // Nodes
       const node = g.append('g')
@@ -536,31 +662,41 @@
         .selectAll('g')
         .data(data.nodes)
         .join('g')
-        .call(d3.drag()
-          .on('start', dragstarted)
-          .on('drag', dragged)
-          .on('end', dragended));
+        .call(dragBehavior);
 
       node.append('circle')
-        .attr('r', d => rScale(d.size || 10))
-        .attr('fill', d => d.color || '#0ea5e9')
+        .attr('r', (d) => rScale(d.size || 10))
+        .attr('fill', (d) => d.color || '#0ea5e9')
         .attr('stroke', '#e5e7eb')
         .attr('stroke-width', 1.8)
         .style('cursor', 'pointer');
 
       // Labels (fade in when zoomed)
       const labels = node.append('text')
-        .text(d => d.label || d.id)
-        .attr('x', d => rScale(d.size || 10) + 6)
+        .text((d) => d.label || d.id)
+        .attr('x', (d) => rScale(d.size || 10) + 6)
         .attr('y', 4)
         .attr('font-size', 11)
         .attr('fill', '#0f172a')
         .attr('opacity', 0)
         .style('pointer-events', 'none');
 
-      // Zoom behavior
+      // Zoom behavior: disabled for touch to keep page scroll natural
       zoom = d3.zoom()
         .scaleExtent([0.1, 10])
+        .filter((event) => {
+          const type = event.type;
+          const pointerType = event.pointerType;
+
+          // Disable zoom on touch devices: keep vertical scrolling intuitive
+          if (pointerType === 'touch') return false;
+
+          if (type === 'wheel') return true;
+          if (type === 'mousedown' && event.button === 0) return true;
+          if (type === 'dblclick') return true;
+
+          return false;
+        })
         .on('zoom', (event) => {
           transform = event.transform;
           g.attr('transform', transform);
@@ -570,70 +706,86 @@
 
       svg.call(zoom);
 
-      // Node tooltips
+      // Node tooltips: desktop (hover) + mobile/desktop (click)
       node
         .on('mouseenter', (event, d) => {
-          tooltip
-            .style('opacity', 1)
-            .html(
-              d.title ||
-              `<strong>${d.label || d.id}</strong>` +
-              (d.size ? `<div>Connections: ${d.size}</div>` : '')
-            );
+          if (event.pointerType === 'touch') return; // avoid conflict with scrolling
+          tooltipPinned = false;
+          showNodeTooltip(event, d);
+        })
+        .on('mousemove', (event, d) => {
+          if (tooltipPinned) return;
+          if (event.pointerType === 'touch') return;
           positionTooltip(event);
         })
-        .on('mousemove', positionTooltip)
         .on('mouseleave', () => {
-          tooltip.style('opacity', 0);
+          if (!tooltipPinned) {
+            tooltip.style('opacity', 0);
+          }
+        })
+        .on('click', (event, d) => {
+          // Tap/click to pin tooltip (works well on mobile)
+          event.stopPropagation();
+          tooltipPinned = true;
+          showNodeTooltip(event, d);
         });
 
-      // Link tooltips
+      // Link tooltips: desktop hover + mobile tap
       link
         .on('mouseenter', (event, d) => {
-          const sourceLabel = getNodeLabel(d.source);
-          const targetLabel = getNodeLabel(d.target);
-          const shared = d.weight || d.value || null;
-
-          tooltip
-            .style('opacity', 1)
-            .html(
-              `<strong>Board Interlock</strong>` +
-              `<div>${sourceLabel} ⟷ ${targetLabel}</div>` +
-              (shared ? `<div>Shared directors: ${shared}</div>` : '')
-            );
+          if (event.pointerType === 'touch') return;
+          tooltipPinned = false;
+          showLinkTooltip(event, d, data.nodes);
+        })
+        .on('mousemove', (event, d) => {
+          if (tooltipPinned) return;
+          if (event.pointerType === 'touch') return;
           positionTooltip(event);
         })
-        .on('mousemove', positionTooltip)
         .on('mouseleave', () => {
-          tooltip.style('opacity', 0);
+          if (!tooltipPinned) {
+            tooltip.style('opacity', 0);
+          }
+        })
+        .on('click', (event, d) => {
+          event.stopPropagation();
+          tooltipPinned = true;
+          showLinkTooltip(event, d, data.nodes);
         });
 
       // Force simulation
       simulation = d3.forceSimulation(data.nodes)
-        .force('link', d3.forceLink(data.links)
-          .id(d => d.id)
-          .distance(80)
-          .strength(0.5))
+        .force(
+          'link',
+          d3.forceLink(data.links)
+            .id((d) => d.id)
+            .distance(80)
+            .strength(0.5)
+        )
         .force('charge', d3.forceManyBody().strength(-120))
         .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide().radius(d => rScale(d.size || 10) + 6));
+        .force('collision', d3.forceCollide().radius((d) => rScale(d.size || 10) + 6));
 
       simulation.on('tick', () => {
         link
-          .attr('x1', d => d.source.x)
-          .attr('y1', d => d.source.y)
-          .attr('x2', d => d.target.x)
-          .attr('y2', d => d.target.y);
+          .attr('x1', (d) => d.source.x)
+          .attr('y1', (d) => d.source.y)
+          .attr('x2', (d) => d.target.x)
+          .attr('y2', (d) => d.target.y);
 
-        node.attr('transform', d => `translate(${d.x},${d.y})`);
+        node.attr('transform', (d) => `translate(${d.x},${d.y})`);
       });
 
       // Controls
       document.getElementById('resetBtn').onclick = () => {
+        tooltipPinned = false;
+        tooltip.style('opacity', 0);
         svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
       };
 
       document.getElementById('centerBtn').onclick = () => {
+        tooltipPinned = false;
+        tooltip.style('opacity', 0);
         simulation.alpha(1).restart();
       };
 
