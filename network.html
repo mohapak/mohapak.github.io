@@ -414,12 +414,11 @@
       svg.selectAll('*').remove();
       
       // Load data
-      const dataUrl = `/data/board_network_${year}_no_isolation.json`;
-      
+      const dataUrl = `/data/board_network_${year}_no_isolates.json`; // correct the file name
+    
       d3.json(dataUrl)
         .then(data => {
           loading.style('display', 'none');
-          
           // Update stats
           const nodes = data.nodes.length;
           const links = data.links.length;
