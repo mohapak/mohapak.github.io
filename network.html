@@ -459,7 +459,7 @@
         <p style="margin-bottom: 0.75rem;">
           • <strong>Link thickness:</strong> Number of shared directors between firms.
         </p>
-        <p>• <strong>Colors:</strong> Firms Sector</p>
+        <p>• <strong>Colors:</strong> Firms Sector.</p>
       </div>
     </div>
   </div>
@@ -753,18 +753,25 @@
           showLinkTooltip(event, d, data.nodes);
         });
 
-      // Force simulation
+      // *** TIGHTER, MORE COMPACT LAYOUT FOR SUBNETWORKS ***
       simulation = d3.forceSimulation(data.nodes)
         .force(
           'link',
           d3.forceLink(data.links)
             .id((d) => d.id)
-            .distance(80)
-            .strength(0.5)
+            // shorter distance + slightly stronger link -> subnetworks closer
+            .distance((d) => 40 + (Math.sqrt(d.weight || 1) * 6))
+            .strength(0.8)
         )
-        .force('charge', d3.forceManyBody().strength(-120))
+        // weaker repulsion so nodes/components don't push so far apart
+        .force('charge', d3.forceManyBody().strength(-60))
+        // keep general centering
         .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide().radius((d) => rScale(d.size || 10) + 6));
+        // gentle pull toward the center on x/y to keep components close together
+        .force('x', d3.forceX(width / 2).strength(0.08))
+        .force('y', d3.forceY(height / 2).strength(0.08))
+        // small collision radius so nodes can pack reasonably close without overlap
+        .force('collision', d3.forceCollide().radius((d) => rScale(d.size || 10) + 4).iterations(2));
 
       simulation.on('tick', () => {
         link
@@ -820,6 +827,8 @@
           const h = container.clientHeight - 60;
           svg.attr('viewBox', [0, 0, w, h]);
           simulation.force('center', d3.forceCenter(w / 2, h / 2));
+          simulation.force('x', d3.forceX(w / 2).strength(0.08));
+          simulation.force('y', d3.forceY(h / 2).strength(0.08));
           simulation.alpha(0.3).restart();
         }, 250);
       };
