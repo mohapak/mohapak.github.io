@@ -414,7 +414,7 @@
       svg.selectAll('*').remove();
       
       // Load data
-      const dataUrl = `/data/board_network_${year}_no_isolates.json`;
+      const dataUrl = `/data/board_network_${year}_no_isolates.json`; // correct the file name
     
       d3.json(dataUrl)
         .then(data => {
