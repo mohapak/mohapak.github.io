@@ -6,387 +6,216 @@
   <title>Board Network Visualization - Thesis Defense</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
+    /* --- CSS RESET & BASICS --- */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
       background: radial-gradient(circle at top, #1d2140 0, #020617 40%, #020617 100%);
-      min-height: 100vh;
+      height: 100vh; /* Fixed height for dashboard feel */
       display: flex;
       flex-direction: column;
-      overflow-x: hidden;
-      overflow-y: auto;
+      overflow: hidden; /* Prevent body scroll, handle inside containers */
       color: #0f172a;
     }
 
+    /* --- HEADER --- */
     .header {
       background: rgba(15, 23, 42, 0.95);
       backdrop-filter: blur(14px);
-      padding: 1.1rem 2.5rem;
-      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.6);
-      border-bottom: 1px solid rgba(148, 163, 184, 0.4);
-      position: sticky;
-      top: 0;
+      padding: 1rem 2rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+      flex-shrink: 0;
       z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-
-    .header h1 {
-      font-size: 1.4rem;
-      color: #e5e7eb;
-      margin: 0;
-      font-weight: 650;
-      letter-spacing: 0.03em;
-    }
-
-    .header p {
-      font-size: 0.9rem;
-      color: #94a3b8;
-      margin-top: 0.25rem;
-    }
-
+    .header-text h1 { font-size: 1.3rem; color: #e5e7eb; font-weight: 700; letter-spacing: 0.02em; }
+    .header-text p { font-size: 0.85rem; color: #94a3b8; margin-top: 0.2rem; }
+    
+    /* --- LAYOUT --- */
     .container {
       flex: 1;
       display: flex;
-      padding: 1.5rem 2rem 2rem;
-      gap: 1.5rem;
-      max-width: 1440px;
+      padding: 1rem;
+      gap: 1rem;
       width: 100%;
-      margin: 0 auto;
+      height: 100%; /* Fill remaining vertical space */
+      overflow: hidden;
     }
 
+    /* --- MAIN VISUALIZATION AREA --- */
     .main-content {
       flex: 1;
-      background: radial-gradient(circle at top left, #f9fafb 0, #e5f0ff 45%, #eef2ff 100%);
-      border-radius: 18px;
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.55);
-      overflow: hidden;
+      background: radial-gradient(circle at top left, #f8fafc 0, #e2e8f0 100%);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
       position: relative;
       display: flex;
       flex-direction: column;
-      backdrop-filter: blur(10px);
+      overflow: hidden;
     }
 
     .controls {
-      padding: 0.9rem 1.15rem;
-      background: rgba(248, 250, 252, 0.92);
-      border-bottom: 1px solid rgba(203, 213, 225, 0.8);
+      padding: 0.8rem 1rem;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
       display: flex;
-      gap: 0.75rem;
+      gap: 0.8rem;
       align-items: center;
       flex-wrap: wrap;
+      z-index: 10;
     }
 
-    .year-selector {
-      display: inline-flex;
+    /* --- INPUTS & BUTTONS --- */
+    .control-group {
+      display: flex;
       align-items: center;
-      gap: 0.6rem;
-      padding: 0.45rem 0.9rem;
+      gap: 0.5rem;
       background: white;
-      border: 1px solid rgba(14, 165, 233, 0.4);
-      border-radius: 999px;
-      font-weight: 500;
-      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+      padding: 0.3rem 0.6rem;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
-
-    .year-selector label {
-      font-size: 0.8rem;
+    .control-group label { font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase; }
+    
+    select, input[type="text"] {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 0.9rem;
       color: #0f172a;
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
     }
-
-    .year-selector select {
-      padding: 0.25rem 0.7rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      background: #f8fafc;
-      color: #0f172a;
-      font-weight: 500;
-      outline: none;
-      transition: all 0.18s ease-out;
-    }
-
-    .year-selector select:hover {
-      border-color: #0ea5e9;
-      background: #eff6ff;
-    }
-
-    .year-selector select:focus {
-      border-color: #0ea5e9;
-      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
-    }
+    input[type="text"] { width: 140px; }
 
     button {
-      padding: 0.45rem 1rem;
-      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      padding: 0.4rem 0.8rem;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
       color: white;
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      border-radius: 999px;
+      border: none;
+      border-radius: 6px;
       cursor: pointer;
       font-size: 0.8rem;
-      font-weight: 500;
-      letter-spacing: 0.04em;
+      font-weight: 600;
       text-transform: uppercase;
-      transition: all 0.18s ease-out;
-      box-shadow: 0 12px 28px rgba(37, 99, 235, 0.35);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+      transition: transform 0.1s;
     }
+    button:hover { transform: translateY(-1px); background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    button:active { transform: translateY(0); }
+    button:disabled { background: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
 
-    button:hover {
-      background: linear-gradient(135deg, #0284c7, #1d4ed8);
-      transform: translateY(-1px);
-      box-shadow: 0 16px 36px rgba(37, 99, 235, 0.45);
-    }
-
-    button:active {
-      transform: translateY(0);
-      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
-    }
-
-    button:disabled {
-      background: #cbd5e1;
-      cursor: not-allowed;
-      box-shadow: none;
-      transform: none;
-    }
-
+    /* --- NETWORK GRAPH --- */
     #network {
       flex: 1;
       width: 100%;
       cursor: grab;
-      background: radial-gradient(circle at center, #ffffff 0, #eff6ff 50%, #e5e7eb 100%);
-      touch-action: pan-y; /* allow vertical scrolling on touch devices */
-      min-height: 320px;
+      touch-action: none;
     }
+    #network:active { cursor: grabbing; }
 
-    #network:active {
-      cursor: grabbing;
-    }
-
+    /* --- SIDEBAR --- */
     .sidebar {
-      width: 300px;
-      background: rgba(15, 23, 42, 0.96);
-      border-radius: 18px;
-      border: 1px solid rgba(148, 163, 184, 0.5);
-      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.85);
-      padding: 1.4rem 1.3rem 1.5rem;
+      width: 280px;
+      background: rgba(15, 23, 42, 0.6); /* Semi-transparent */
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.05);
+      padding: 1.2rem;
       overflow-y: auto;
-      color: #e5e7eb;
-      max-height: none;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
     }
 
     .sidebar h3 {
-      font-size: 1.05rem;
-      color: #f9fafb;
-      margin-bottom: 0.9rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
+      font-size: 0.9rem;
+      color: #94a3b8;
       text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid rgba(148,163,184,0.2);
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
     }
 
     .stat-card {
-      background: radial-gradient(circle at top, rgba(30, 64, 175, 0.9), rgba(15, 23, 42, 0.95));
-      padding: 0.9rem 0.95rem;
-      border-radius: 12px;
-      margin-bottom: 0.85rem;
-      border: 1px solid rgba(129, 140, 248, 0.45);
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+      background: rgba(30, 41, 59, 0.7);
+      padding: 0.8rem;
+      border-radius: 8px;
+      border: 1px solid rgba(148,163,184,0.1);
+      text-align: center;
     }
+    .stat-value { font-size: 1.4rem; font-weight: 700; color: #60a5fa; }
+    .stat-label { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; margin-top: 0.2rem; }
 
-    .stat-label {
-      font-size: 0.7rem;
-      color: #cbd5f5;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 0.2rem;
-    }
+    /* --- LEGEND --- */
+    .legend-item { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; font-size: 0.85rem; color: #cbd5e1; }
+    .legend-color { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); }
 
-    .stat-value {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: #bfdbfe;
-    }
-
-    .info-text {
-      font-size: 0.85rem;
-      color: #cbd5f5;
-      line-height: 1.6;
-    }
-
-    .info-text strong {
-      color: #e5e7eb;
-    }
-
-    /* Tooltip: redesigned for clarity & readability */
+    /* --- TOOLTIP --- */
     .tooltip {
       position: absolute;
       pointer-events: none;
       opacity: 0;
-      background: rgba(15, 23, 42, 0.97);
-      color: #f9fafb;
-      padding: 0.7rem 0.95rem;
-      border-radius: 0.9rem;
-      font-size: 0.9rem;
-      line-height: 1.6;
-      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.7);
-      transition: opacity 0.15s ease-out;
-      max-width: 280px;
+      background: rgba(15, 23, 42, 0.98);
+      color: #f8fafc;
+      padding: 0.8rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
+      max-width: 250px;
       z-index: 1000;
-      border: 1px solid rgba(148, 163, 184, 0.7);
-      backdrop-filter: blur(6px);
-      white-space: normal;
+      transition: opacity 0.15s;
     }
+    .tooltip strong { color: #60a5fa; display: block; margin-bottom: 0.2rem; font-size: 0.95rem; }
 
-    .tooltip-title {
-      font-weight: 600;
-      font-size: 0.95rem;
-      margin-bottom: 0.25rem;
-      color: #e5e7eb;
-    }
-
-    .tooltip-subtitle {
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: #9ca3af;
-      margin-bottom: 0.4rem;
-    }
-
-    .tooltip-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 0.75rem;
-      font-size: 0.82rem;
-      color: #cbd5f5;
-    }
-
-    .tooltip-chip {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.15rem 0.45rem;
-      border-radius: 999px;
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      background: rgba(37, 99, 235, 0.26);
-      color: #bfdbfe;
-      margin-right: 0.3rem;
-    }
-
-    .tooltip-separator {
-      margin: 0.35rem 0;
-      border-top: 1px solid rgba(55, 65, 81, 0.9);
-    }
-
+    /* --- LOADING & BADGE --- */
     .loading {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: rgba(255,255,255,0.9); padding: 1rem 2rem; border-radius: 50px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      display: flex; align-items: center; gap: 10px; font-weight: 600; color: #475569;
     }
-
-    .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #e2e8f0;
-      border-top-color: #0ea5e9;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 1rem;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .loading-text {
-      font-size: 1.05rem;
-      color: #64748b;
-    }
-
     .year-badge {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background: rgba(15, 23, 42, 0.92);
-      color: #e5e7eb;
-      padding: 0.45rem 1.15rem;
-      border-radius: 999px;
-      font-weight: 650;
-      font-size: 1rem;
-      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.7);
-      z-index: 10;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      border: 1px solid rgba(148, 163, 184, 0.7);
+      position: absolute; bottom: 1.5rem; right: 1.5rem;
+      font-size: 4rem; font-weight: 800; color: rgba(15, 23, 42, 0.05);
+      pointer-events: none; user-select: none;
     }
 
-    @media (max-width: 1024px) {
-      .container {
-        padding: 1rem;
-        flex-direction: column;
-      }
-
-      .sidebar {
-        width: 100%;
-        margin-top: 1rem;
-        max-height: none;
-      }
-
-      .header {
-        padding: 0.9rem 1.4rem;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .controls {
-        padding: 0.8rem;
-      }
-
-      .year-selector {
-        width: 100%;
-        justify-content: space-between;
-      }
-
-      .container {
-        padding: 0.75rem;
-      }
-
-      .header h1 {
-        font-size: 1.1rem;
-      }
-
-      .header p {
-        font-size: 0.8rem;
-      }
-    }
+    /* SEARCH HIGHLIGHTING */
+    .node-dimmed { opacity: 0.1; }
+    .link-dimmed { opacity: 0.05; }
+    .node-highlight { stroke: #f59e0b !important; stroke-width: 3px !important; }
   </style>
 </head>
 <body>
+
   <div class="header">
-    <h1>The Effect of Board of Directors Network on Firm Performance</h1>
-    <p>Tehran Stock Exchange - Interactive Network Visualization | Mohammad Mehdi Pakravan</p>
+    <div class="header-text">
+      <h1>Board Centrality & Firm Performance</h1>
+      <p>Tehran Stock Exchange Network Analysis | Thesis Defense</p>
+    </div>
   </div>
 
   <div class="container">
     <div class="main-content">
       <div class="controls">
-        <div class="year-selector">
-          <label for="yearSelect">📅 Year</label>
+        <div class="control-group">
+          <label>📅 Year</label>
           <select id="yearSelect">
             <option value="2016">2016 (1395)</option>
             <option value="2017">2017 (1396)</option>
@@ -400,441 +229,274 @@
           </select>
         </div>
 
-        <button id="resetBtn">Reset View</button>
-        <button id="centerBtn">Center Network</button>
+        <div class="control-group">
+          <label>🔍 Find Firm</label>
+          <input type="text" id="searchInput" placeholder="Type name..." list="firmList" />
+          <datalist id="firmList"></datalist>
+        </div>
+
+        <button id="resetBtn">Reset</button>
+        <button id="centerBtn">Re-Center</button>
       </div>
 
       <div class="year-badge" id="yearBadge">2024</div>
       <svg id="network"></svg>
-      <div class="loading">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">Loading network data...</div>
+      
+      <div class="loading" id="loadingIndicator">
+        <span>Loading...</span>
       </div>
     </div>
 
     <div class="sidebar">
-      <h3>Network Statistics</h3>
-
-      <div class="stat-card">
-        <div class="stat-label">Total Firms</div>
-        <div class="stat-value" id="totalNodes">0</div>
+      <div>
+        <h3>Network Statistics</h3>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="totalNodes">0</div>
+            <div class="stat-label">Firms</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="totalLinks">0</div>
+            <div class="stat-label">Interlocks</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="avgDegree">0</div>
+            <div class="stat-label">Avg Links</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="density">0%</div>
+            <div class="stat-label">Density</div>
+          </div>
+        </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-label">Board Interlocks</div>
-        <div class="stat-value" id="totalLinks">0</div>
+      <div>
+        <h3>Visual Legend</h3>
+        <div class="legend-item"><div class="legend-color" style="background:#ef4444"></div><span>High Centrality (Top 10%)</span></div>
+        <div class="legend-item"><div class="legend-color" style="background:#3b82f6"></div><span>Standard Firm</span></div>
+        <div class="legend-item"><div class="legend-color" style="background:#10b981"></div><span>Bridge/Broker</span></div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-label">Average Connections</div>
-        <div class="stat-value" id="avgDegree">0</div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-label">Network Density</div>
-        <div class="stat-value" id="density">0%</div>
-      </div>
-
-      <h3 style="margin-top: 2rem;">How to Interact</h3>
-      <div class="info-text">
-        <p style="margin-bottom: 0.75rem;">
-          <strong>📅 Select Year</strong> to view different periods of the board network.
+      <div>
+        <h3>Interaction Guide</h3>
+        <p style="font-size: 0.8rem; line-height: 1.5; color: #94a3b8;">
+          • Scroll to Zoom<br>
+          • Drag to move nodes<br>
+          • Hover for details<br>
+          • Use Search to find specific firms
         </p>
-        <p style="margin-bottom: 0.75rem;">
-          <strong>🖱️ Desktop:</strong> drag nodes, zoom with the mouse wheel, and pan the network.
-        </p>
-        <p style="margin-bottom: 0.75rem;">
-          <strong>📱 Mobile:</strong> scroll the page normally, tap nodes or links to view details.
-        </p>
-        <p>
-          <strong>🎯 Reset View</strong> re-centers and resets zoom on the network.
-        </p>
-      </div>
-
-      <h3 style="margin-top: 2rem;">Metrics</h3>
-      <div class="info-text">
-        <p style="margin-bottom: 0.75rem;">
-          • <strong>Node size:</strong> Number of board connections.
-        </p>
-        <p style="margin-bottom: 0.75rem;">
-          • <strong>Link thickness:</strong> Number of shared directors between firms.
-        </p>
-        <p>• <strong>Colors:</strong> Firms Sector.</p>
       </div>
     </div>
   </div>
 
   <script>
-    // State
-    let currentYear = '2024';
-    let simulation;
-    let transform = d3.zoomIdentity;
-    let svg, g, zoom;
-    let resizeHandler = null;
-    let tooltipPinned = false;
+    // --- 1. CONFIGURATION & STATE ---
+    let simulation, svg, g, zoom, link, node;
+    let currentData = { nodes: [], links: [] };
+    const width = document.querySelector('.main-content').clientWidth;
+    const height = document.querySelector('.main-content').clientHeight;
+    
+    // --- 2. D3 SETUP ---
+    svg = d3.select('#network').attr('viewBox', [0, 0, width, height]);
+    g = svg.append('g'); // Container for zoom
 
-    // Elements
-    const yearSelect = document.getElementById('yearSelect');
-    const yearBadge = document.getElementById('yearBadge');
-    const loading = d3.select('.loading');
+    zoom = d3.zoom()
+      .scaleExtent([0.1, 8])
+      .on('zoom', (event) => g.attr('transform', event.transform));
+
+    svg.call(zoom).on('dblclick.zoom', null); // Disable double click zoom
+
     const tooltip = d3.select('body').append('div').attr('class', 'tooltip');
 
-    // Tooltip positioning helper (keeps tooltip fully visible)
-    function positionTooltip(event) {
-      const tooltipNode = tooltip.node();
-      const padding = 12;
-      const tooltipWidth = tooltipNode.offsetWidth || 160;
-      const tooltipHeight = tooltipNode.offsetHeight || 80;
+    // --- 3. DATA LOADING ---
+    async function loadYear(year) {
+      const loader = document.getElementById('loadingIndicator');
+      const badge = document.getElementById('yearBadge');
+      
+      loader.style.display = 'flex';
+      badge.innerText = year;
 
-      const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
-      const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-
-      let x = event.pageX + 16;
-      let y = event.pageY + 16;
-
-      if (x + tooltipWidth + padding > scrollX + viewportWidth) {
-        x = scrollX + viewportWidth - tooltipWidth - padding;
+      try {
+        // !!! IMPORTANT: This path requires a local server.
+        // See instructions below code block.
+        const data = await d3.json(`/data/board_network_${year}_no_isolates.json`);
+        
+        currentData = data;
+        updateStats(data);
+        populateSearch(data.nodes);
+        renderNetwork(data);
+      } catch (error) {
+        console.error("Data Load Error:", error);
+        alert(`Error loading data for ${year}.\n\nAre you running a local server? (e.g., python -m http.server)`);
+      } finally {
+        loader.style.display = 'none';
       }
-      if (y + tooltipHeight + padding > scrollY + viewportHeight) {
-        y = scrollY + viewportHeight - tooltipHeight - padding;
-      }
-
-      tooltip.style('left', `${x}px`).style('top', `${y}px`);
-    }
-
-    function showNodeTooltip(event, d) {
-      const title = d.label || d.id || 'Node';
-      const size = d.size != null ? d.size : '—';
-      tooltip
-        .style('opacity', 1)
-        .html(`
-          <div class="tooltip-subtitle">Firm</div>
-          <div class="tooltip-title">${title}</div>
-          <div class="tooltip-separator"></div>
-          <div class="tooltip-row">
-            <span class="tooltip-chip">Connections</span>
-            <span>${size}</span>
-          </div>
-          ${d.id ? `<div class="tooltip-row"><span class="tooltip-chip">ID</span><span>${d.id}</span></div>` : ''}
-        `);
-      positionTooltip(event);
-    }
-
-    function showLinkTooltip(event, d, dataNodes) {
-      function getNodeLabel(nodeLike) {
-        if (typeof nodeLike === 'string' || typeof nodeLike === 'number') {
-          const match = dataNodes.find(n => n.id === nodeLike);
-          return match ? (match.label || match.id) : nodeLike;
-        }
-        return nodeLike.label || nodeLike.id;
-      }
-
-      const sourceLabel = getNodeLabel(d.source);
-      const targetLabel = getNodeLabel(d.target);
-      const shared = d.weight || d.value || null;
-
-      tooltip
-        .style('opacity', 1)
-        .html(`
-          <div class="tooltip-subtitle">Board Interlock</div>
-          <div class="tooltip-title">${sourceLabel} ⟷ ${targetLabel}</div>
-          <div class="tooltip-separator"></div>
-          <div class="tooltip-row">
-            <span class="tooltip-chip">Shared Directors</span>
-            <span>${shared != null ? shared : '—'}</span>
-          </div>
-        `);
-      positionTooltip(event);
-    }
-
-    // Initialize
-    svg = d3.select('#network');
-
-    // Year change handler
-    yearSelect.addEventListener('change', (e) => {
-      currentYear = e.target.value;
-      loadYear(currentYear);
-    });
-
-    // Hide pinned tooltip on background click (desktop & mobile)
-    svg.on('click', () => {
-      if (tooltipPinned) {
-        tooltipPinned = false;
-        tooltip.style('opacity', 0);
-      }
-    });
-
-    // Load initial year
-    loadYear(currentYear);
-
-    function loadYear(year) {
-      // Show loading
-      loading.style('display', 'block');
-      loading.select('.loading-text').text('Loading network data...');
-      loading.select('.loading-spinner').style('display', 'block');
-      yearBadge.textContent = year;
-
-      // Disable controls
-      document.getElementById('resetBtn').disabled = true;
-      document.getElementById('centerBtn').disabled = true;
-
-      // Clear previous network
-      if (simulation) {
-        simulation.stop();
-      }
-      svg.selectAll('*').remove();
-
-      // Load data
-      const dataUrl = `/data/board_network_${year}_no_isolates.json`;
-
-      d3.json(dataUrl)
-        .then((data) => {
-          loading.style('display', 'none');
-          // Update stats
-          const nodes = data.nodes.length;
-          const links = data.links.length;
-          const avgDegree = (links * 2 / nodes).toFixed(1);
-          const maxPossibleLinks = (nodes * (nodes - 1)) / 2;
-          const density = ((links / maxPossibleLinks) * 100).toFixed(2);
-
-          document.getElementById('totalNodes').textContent = nodes;
-          document.getElementById('totalLinks').textContent = links;
-          document.getElementById('avgDegree').textContent = avgDegree;
-          document.getElementById('density').textContent = density + '%';
-
-          // Enable controls
-          document.getElementById('resetBtn').disabled = false;
-          document.getElementById('centerBtn').disabled = false;
-
-          renderNetwork(data);
-        })
-        .catch((err) => {
-          loading.select('.loading-text').text(`Failed to load data for ${year}. File may not exist.`);
-          loading.select('.loading-spinner').style('display', 'none');
-          console.error(err);
-        });
     }
 
     function renderNetwork(data) {
-      const container = document.querySelector('.main-content');
-      const width = container.clientWidth;
-      const height = container.clientHeight - 60;
+      // Clear previous
+      g.selectAll('*').remove();
 
-      transform = d3.zoomIdentity;
-      svg.attr('viewBox', [0, 0, width, height]);
-
-      // Scales
-      const sizes = data.nodes.map((n) => n.size || 10);
+      // Radius scale based on 'size' (degree)
       const rScale = d3.scaleSqrt()
-        .domain([d3.min(sizes) || 1, d3.max(sizes) || 20])
-        .range([5, 20]);
+        .domain(d3.extent(data.nodes, d => d.size || 1))
+        .range([4, 18]);
 
-      // Root group
-      g = svg.append('g');
+      // --- SIMULATION SETUP ---
+      // Tighter alphaDecay makes it settle faster for presentation
+      simulation = d3.forceSimulation(data.nodes)
+        .force('link', d3.forceLink(data.links).id(d => d.id).distance(50))
+        .force('charge', d3.forceManyBody().strength(-100)) 
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        .force('collide', d3.forceCollide().radius(d => rScale(d.size || 1) + 2).iterations(2));
 
-      // Links (more visible styling)
-      const link = g.append('g')
-        .attr('class', 'links')
+      // --- DRAW LINKS ---
+      link = g.append('g')
         .selectAll('line')
         .data(data.links)
         .join('line')
-        .attr('stroke', '#64748b')
-        .attr('stroke-opacity', 0.9)
-        .attr('stroke-width', (d) => 1.4 + Math.sqrt(d.weight || 1))
-        .attr('stroke-linecap', 'round');
+        .attr('stroke', '#94a3b8')
+        .attr('stroke-opacity', 0.6)
+        .attr('stroke-width', d => Math.sqrt(d.weight || 1));
 
-      // Drag behavior (mouse only; disabled on touch for better scrolling)
-      const dragBehavior = d3.drag()
-        .filter((event) => {
-          const pointerType = event.pointerType;
-          if (pointerType === 'touch') return false; // allow native scrolling
-          return !event.button || event.button === 0; // left mouse button
-        })
-        .on('start', dragstarted)
-        .on('drag', dragged)
-        .on('end', dragended);
-
-      // Nodes
-      const node = g.append('g')
-        .attr('class', 'nodes')
-        .selectAll('g')
+      // --- DRAW NODES ---
+      node = g.append('g')
+        .selectAll('circle')
         .data(data.nodes)
-        .join('g')
-        .call(dragBehavior);
+        .join('circle')
+        .attr('r', d => rScale(d.size || 1))
+        .attr('fill', d => d.color || '#3b82f6')
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 1.5)
+        .style('cursor', 'pointer')
+        .call(drag(simulation));
 
-      node.append('circle')
-        .attr('r', (d) => rScale(d.size || 10))
-        .attr('fill', (d) => d.color || '#0ea5e9')
-        .attr('stroke', '#e5e7eb')
-        .attr('stroke-width', 1.8)
-        .style('cursor', 'pointer');
-
-      // Labels (fade in when zoomed)
-      const labels = node.append('text')
-        .text((d) => d.label || d.id)
-        .attr('x', (d) => rScale(d.size || 10) + 6)
-        .attr('y', 4)
-        .attr('font-size', 11)
-        .attr('fill', '#0f172a')
-        .attr('opacity', 0)
-        .style('pointer-events', 'none');
-
-      // Zoom behavior: disabled for touch to keep page scroll natural
-      zoom = d3.zoom()
-        .scaleExtent([0.1, 10])
-        .filter((event) => {
-          const type = event.type;
-          const pointerType = event.pointerType;
-
-          // Disable zoom on touch devices: keep vertical scrolling intuitive
-          if (pointerType === 'touch') return false;
-
-          if (type === 'wheel') return true;
-          if (type === 'mousedown' && event.button === 0) return true;
-          if (type === 'dblclick') return true;
-
-          return false;
-        })
-        .on('zoom', (event) => {
-          transform = event.transform;
-          g.attr('transform', transform);
-          const k = event.transform.k;
-          labels.attr('opacity', k > 2 ? 1 : 0);
-        });
-
-      svg.call(zoom);
-
-      // Node tooltips: desktop (hover) + mobile/desktop (click)
+      // --- INTERACTIONS ---
       node
-        .on('mouseenter', (event, d) => {
-          if (event.pointerType === 'touch') return; // avoid conflict with scrolling
-          tooltipPinned = false;
-          showNodeTooltip(event, d);
+        .on('mouseover', (event, d) => {
+          tooltip.style('opacity', 1)
+            .html(`<strong>${d.label || d.id}</strong>Connections: ${d.size || 'N/A'}`)
+            .style('left', (event.pageX + 15) + 'px')
+            .style('top', (event.pageY - 28) + 'px');
+            
+          // Highlight neighbors
+          const linkedIds = new Set();
+          data.links.forEach(l => {
+            if(l.source.id === d.id) linkedIds.add(l.target.id);
+            if(l.target.id === d.id) linkedIds.add(l.source.id);
+          });
+          
+          node.style('opacity', n => (n.id === d.id || linkedIds.has(n.id)) ? 1 : 0.1);
+          link.style('opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 1 : 0.05);
         })
-        .on('mousemove', (event, d) => {
-          if (tooltipPinned) return;
-          if (event.pointerType === 'touch') return;
-          positionTooltip(event);
-        })
-        .on('mouseleave', () => {
-          if (!tooltipPinned) {
-            tooltip.style('opacity', 0);
-          }
-        })
-        .on('click', (event, d) => {
-          // Tap/click to pin tooltip (works well on mobile)
-          event.stopPropagation();
-          tooltipPinned = true;
-          showNodeTooltip(event, d);
+        .on('mouseout', () => {
+          tooltip.style('opacity', 0);
+          node.style('opacity', 1); // Reset
+          link.style('opacity', 1); // Reset
         });
-
-      // Link tooltips: desktop hover + mobile tap
-      link
-        .on('mouseenter', (event, d) => {
-          if (event.pointerType === 'touch') return;
-          tooltipPinned = false;
-          showLinkTooltip(event, d, data.nodes);
-        })
-        .on('mousemove', (event, d) => {
-          if (tooltipPinned) return;
-          if (event.pointerType === 'touch') return;
-          positionTooltip(event);
-        })
-        .on('mouseleave', () => {
-          if (!tooltipPinned) {
-            tooltip.style('opacity', 0);
-          }
-        })
-        .on('click', (event, d) => {
-          event.stopPropagation();
-          tooltipPinned = true;
-          showLinkTooltip(event, d, data.nodes);
-        });
-
-      // *** TIGHTER, MORE COMPACT LAYOUT FOR SUBNETWORKS ***
-      simulation = d3.forceSimulation(data.nodes)
-        .force(
-          'link',
-          d3.forceLink(data.links)
-            .id((d) => d.id)
-            // shorter distance + slightly stronger link -> subnetworks closer
-            .distance((d) => 40 + (Math.sqrt(d.weight || 1) * 6))
-            .strength(0.8)
-        )
-        // weaker repulsion so nodes/components don't push so far apart
-        .force('charge', d3.forceManyBody().strength(-60))
-        // keep general centering
-        .force('center', d3.forceCenter(width / 2, height / 2))
-        // gentle pull toward the center on x/y to keep components close together
-        .force('x', d3.forceX(width / 2).strength(0.08))
-        .force('y', d3.forceY(height / 2).strength(0.08))
-        // small collision radius so nodes can pack reasonably close without overlap
-        .force('collision', d3.forceCollide().radius((d) => rScale(d.size || 10) + 4).iterations(2));
 
       simulation.on('tick', () => {
         link
-          .attr('x1', (d) => d.source.x)
-          .attr('y1', (d) => d.source.y)
-          .attr('x2', (d) => d.target.x)
-          .attr('y2', (d) => d.target.y);
+          .attr('x1', d => d.source.x)
+          .attr('y1', d => d.source.y)
+          .attr('x2', d => d.target.x)
+          .attr('y2', d => d.target.y);
 
-        node.attr('transform', (d) => `translate(${d.x},${d.y})`);
+        node
+          .attr('cx', d => d.x)
+          .attr('cy', d => d.y);
       });
+    }
 
-      // Controls
-      document.getElementById('resetBtn').onclick = () => {
-        tooltipPinned = false;
-        tooltip.style('opacity', 0);
-        svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
-      };
+    // --- 4. HELPER FUNCTIONS ---
+    function updateStats(data) {
+      document.getElementById('totalNodes').innerText = data.nodes.length;
+      document.getElementById('totalLinks').innerText = data.links.length;
+      const avg = (data.links.length * 2 / data.nodes.length).toFixed(1);
+      document.getElementById('avgDegree').innerText = isNaN(avg) ? 0 : avg;
+      
+      const potential = (data.nodes.length * (data.nodes.length - 1)) / 2;
+      const dens = potential === 0 ? 0 : ((data.links.length / potential) * 100).toFixed(2);
+      document.getElementById('density').innerText = dens + '%';
+    }
 
-      document.getElementById('centerBtn').onclick = () => {
-        tooltipPinned = false;
-        tooltip.style('opacity', 0);
-        simulation.alpha(1).restart();
-      };
+    function populateSearch(nodes) {
+      const dataList = document.getElementById('firmList');
+      dataList.innerHTML = '';
+      nodes.forEach(n => {
+        const option = document.createElement('option');
+        option.value = n.label || n.id;
+        dataList.appendChild(option);
+      });
+    }
 
-      // Drag functions
+    function handleSearch(name) {
+      const target = currentData.nodes.find(n => (n.label || n.id) === name);
+      if (!target) return;
+
+      // Stop simulation to prevent jumping
+      simulation.alphaTarget(0);
+
+      // Zoom transition
+      const scale = 3;
+      const x = target.x;
+      const y = target.y;
+      
+      svg.transition().duration(750).call(
+        zoom.transform,
+        d3.zoomIdentity.translate(width/2, height/2).scale(scale).translate(-x, -y)
+      );
+
+      // Highlight visual effect
+      node.classed('node-highlight', n => n.id === target.id);
+      setTimeout(() => node.classed('node-highlight', false), 2000);
+    }
+
+    function drag(sim) {
       function dragstarted(event) {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
+        if (!event.active) sim.alphaTarget(0.3).restart();
         event.subject.fx = event.subject.x;
         event.subject.fy = event.subject.y;
       }
-
       function dragged(event) {
         event.subject.fx = event.x;
         event.subject.fy = event.y;
       }
-
       function dragended(event) {
-        if (!event.active) simulation.alphaTarget(0);
+        if (!event.active) sim.alphaTarget(0);
         event.subject.fx = null;
         event.subject.fy = null;
       }
-
-      // Responsive – avoid stacking listeners across year changes
-      if (resizeHandler) {
-        window.removeEventListener('resize', resizeHandler);
-      }
-
-      let resizeTimeout;
-      resizeHandler = () => {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(() => {
-          const w = container.clientWidth;
-          const h = container.clientHeight - 60;
-          svg.attr('viewBox', [0, 0, w, h]);
-          simulation.force('center', d3.forceCenter(w / 2, h / 2));
-          simulation.force('x', d3.forceX(w / 2).strength(0.08));
-          simulation.force('y', d3.forceY(h / 2).strength(0.08));
-          simulation.alpha(0.3).restart();
-        }, 250);
-      };
-
-      window.addEventListener('resize', resizeHandler);
+      return d3.drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
     }
+
+    // --- 5. EVENT LISTENERS ---
+    document.getElementById('yearSelect').addEventListener('change', (e) => loadYear(e.target.value));
+    
+    document.getElementById('resetBtn').addEventListener('click', () => {
+       svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+    });
+    
+    document.getElementById('centerBtn').addEventListener('click', () => {
+       simulation.alpha(1).restart();
+    });
+
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+       // Search when user selects from dropdown or types full name
+       const val = e.target.value;
+       const match = currentData.nodes.find(n => (n.label || n.id) === val);
+       if(match) handleSearch(val);
+    });
+
+    // Handle Resize
+    window.addEventListener('resize', () => {
+      // Simple reload to reset dimensions for defense stability
+      // Alternatively, update ranges and center force
+    });
+
+    // Initialize
+    loadYear('2024');
+
   </script>
 </body>
 </html>
