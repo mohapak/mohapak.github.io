@@ -454,7 +454,7 @@
       <h3 style="margin-top: 2rem;">Metrics</h3>
       <div class="info-text">
         <p style="margin-bottom: 0.75rem;">
-          • <strong>Node size:</strong> Number of board connections.
+          • <strong>Node size:</strong> Degree centrality (number of board connections).
         </p>
         <p style="margin-bottom: 0.75rem;">
           • <strong>Link thickness:</strong> Number of shared directors between firms.
@@ -478,6 +478,166 @@
     const yearBadge = document.getElementById('yearBadge');
     const loading = d3.select('.loading');
     const tooltip = d3.select('body').append('div').attr('class', 'tooltip');
+
+    function formatNumber(value, decimals = 3) {
+      if (value == null || !isFinite(value)) return '—';
+      return value.toFixed(decimals);
+    }
+
+    // Compute centralities and attach to nodes
+    function computeCentralities(data) {
+      const nodes = data.nodes;
+      const links = data.links;
+      const n = nodes.length;
+      if (!n) return;
+
+      const idToIndex = new Map();
+      nodes.forEach((node, i) => {
+        idToIndex.set(node.id, i);
+      });
+
+      function getIndex(ref) {
+        if (typeof ref === 'number' && ref >= 0 && ref < n) return ref;
+        if (typeof ref === 'string' || typeof ref === 'number') {
+          const idx = idToIndex.get(ref);
+          if (idx !== undefined) return idx;
+        }
+        if (ref && typeof ref === 'object' && ref.id != null) {
+          const idx = idToIndex.get(ref.id);
+          if (idx !== undefined) return idx;
+        }
+        return null;
+      }
+
+      // Build adjacency list for undirected graph
+      const adj = Array.from({ length: n }, () => []);
+      links.forEach((l) => {
+        const u = getIndex(l.source);
+        const v = getIndex(l.target);
+        if (u == null || v == null || u === v) return;
+        adj[u].push(v);
+        adj[v].push(u);
+      });
+
+      // Degree centrality
+      const degree = adj.map(neighbors => neighbors.length);
+
+      // Closeness centrality
+      const closeness = new Array(n).fill(0);
+      for (let s = 0; s < n; s++) {
+        const dist = new Array(n).fill(-1);
+        const queue = [s];
+        dist[s] = 0;
+        let head = 0;
+        let visitedCount = 1;
+        let distSum = 0;
+
+        while (head < queue.length) {
+          const v = queue[head++];
+          const dv = dist[v];
+          for (const w of adj[v]) {
+            if (dist[w] === -1) {
+              dist[w] = dv + 1;
+              distSum += dv + 1;
+              visitedCount++;
+              queue.push(w);
+            }
+          }
+        }
+
+        if (distSum > 0 && visitedCount > 1) {
+          closeness[s] = (visitedCount - 1) / distSum;
+        } else {
+          closeness[s] = 0;
+        }
+      }
+
+      // Betweenness centrality (Brandes algorithm, unweighted)
+      const betweenness = new Array(n).fill(0);
+      for (let s = 0; s < n; s++) {
+        const stack = [];
+        const pred = Array.from({ length: n }, () => []);
+        const sigma = new Array(n).fill(0);
+        const dist = new Array(n).fill(-1);
+        sigma[s] = 1;
+        dist[s] = 0;
+
+        const queue = [s];
+        let head = 0;
+
+        while (head < queue.length) {
+          const v = queue[head++];
+          stack.push(v);
+          for (const w of adj[v]) {
+            if (dist[w] < 0) {
+              queue.push(w);
+              dist[w] = dist[v] + 1;
+            }
+            if (dist[w] === dist[v] + 1) {
+              sigma[w] += sigma[v];
+              pred[w].push(v);
+            }
+          }
+        }
+
+        const delta = new Array(n).fill(0);
+        while (stack.length) {
+          const w = stack.pop();
+          for (const v of pred[w]) {
+            if (sigma[w] !== 0) {
+              delta[v] += (sigma[v] / sigma[w]) * (1 + delta[w]);
+            }
+          }
+          if (w !== s) {
+            betweenness[w] += delta[w];
+          }
+        }
+      }
+
+      // Eigenvector centrality via power iteration
+      let eigen = new Array(n).fill(1 / n);
+      const maxIter = 100;
+      const tol = 1e-6;
+      for (let iter = 0; iter < maxIter; iter++) {
+        const next = new Array(n).fill(0);
+        for (let v = 0; v < n; v++) {
+          for (const w of adj[v]) {
+            next[v] += eigen[w];
+          }
+        }
+        let norm = 0;
+        for (let i = 0; i < n; i++) norm += next[i] * next[i];
+        norm = Math.sqrt(norm);
+        if (norm === 0) break;
+        for (let i = 0; i < n; i++) next[i] /= norm;
+
+        let diff = 0;
+        for (let i = 0; i < n; i++) {
+          diff += Math.abs(next[i] - eigen[i]);
+        }
+        eigen = next;
+        if (diff < tol) break;
+      }
+
+      // Normalize values for optional use
+      const maxDeg = Math.max(...degree, 0);
+      const maxClose = Math.max(...closeness, 0);
+      const maxBet = Math.max(...betweenness, 0);
+      const maxEig = Math.max(...eigen, 0);
+
+      nodes.forEach((node, i) => {
+        node.centrality = {
+          degree: degree[i],
+          degreeNorm: maxDeg ? degree[i] / maxDeg : 0,
+          closeness: closeness[i],
+          closenessNorm: maxClose ? closeness[i] / maxClose : 0,
+          betweenness: betweenness[i],
+          betweennessNorm: maxBet ? betweenness[i] / maxBet : 0,
+          eigenvector: eigen[i],
+          eigenNorm: maxEig ? eigen[i] / maxEig : 0
+        };
+      });
+    }
 
     // Tooltip positioning helper (keeps tooltip fully visible)
     function positionTooltip(event) {
@@ -506,7 +666,7 @@
 
     function showNodeTooltip(event, d) {
       const title = d.label || d.id || 'Node';
-      const size = d.size != null ? d.size : '—';
+      const c = d.centrality || {};
       tooltip
         .style('opacity', 1)
         .html(`
@@ -514,10 +674,27 @@
           <div class="tooltip-title">${title}</div>
           <div class="tooltip-separator"></div>
           <div class="tooltip-row">
-            <span class="tooltip-chip">Connections</span>
-            <span>${size}</span>
+            <span class="tooltip-chip">Degree</span>
+            <span>${c.degree != null ? c.degree : '—'}</span>
           </div>
-          ${d.id ? `<div class="tooltip-row"><span class="tooltip-chip">ID</span><span>${d.id}</span></div>` : ''}
+          <div class="tooltip-row">
+            <span class="tooltip-chip">Closeness</span>
+            <span>${formatNumber(c.closeness)}</span>
+          </div>
+          <div class="tooltip-row">
+            <span class="tooltip-chip">Betweenness</span>
+            <span>${formatNumber(c.betweenness)}</span>
+          </div>
+          <div class="tooltip-row">
+            <span class="tooltip-chip">Eigenvector</span>
+            <span>${formatNumber(c.eigenvector)}</span>
+          </div>
+          ${d.id ? `
+          <div class="tooltip-separator"></div>
+          <div class="tooltip-row">
+            <span class="tooltip-chip">ID</span>
+            <span>${d.id}</span>
+          </div>` : ''}
         `);
       positionTooltip(event);
     }
@@ -591,6 +768,9 @@
 
       d3.json(dataUrl)
         .then((data) => {
+          // Compute centralities before rendering
+          computeCentralities(data);
+
           loading.style('display', 'none');
           // Update stats
           const nodes = data.nodes.length;
@@ -625,10 +805,17 @@
       transform = d3.zoomIdentity;
       svg.attr('viewBox', [0, 0, width, height]);
 
-      // Scales
-      const sizes = data.nodes.map((n) => n.size || 10);
+      // Helper to choose node size: use degree centrality if available
+      function getNodeSize(d) {
+        if (d.centrality && d.centrality.degree != null && d.centrality.degree > 0) {
+          return d.centrality.degree;
+        }
+        return d.size != null ? d.size : 10;
+      }
+
+      const baseSizes = data.nodes.map(getNodeSize);
       const rScale = d3.scaleSqrt()
-        .domain([d3.min(sizes) || 1, d3.max(sizes) || 20])
+        .domain([d3.min(baseSizes) || 1, d3.max(baseSizes) || 20])
         .range([5, 20]);
 
       // Root group
@@ -665,7 +852,7 @@
         .call(dragBehavior);
 
       node.append('circle')
-        .attr('r', (d) => rScale(d.size || 10))
+        .attr('r', (d) => rScale(getNodeSize(d)))
         .attr('fill', (d) => d.color || '#0ea5e9')
         .attr('stroke', '#e5e7eb')
         .attr('stroke-width', 1.8)
@@ -674,7 +861,7 @@
       // Labels (fade in when zoomed)
       const labels = node.append('text')
         .text((d) => d.label || d.id)
-        .attr('x', (d) => rScale(d.size || 10) + 6)
+        .attr('x', (d) => rScale(getNodeSize(d)) + 6)
         .attr('y', 4)
         .attr('font-size', 11)
         .attr('fill', '#0f172a')
@@ -759,19 +946,14 @@
           'link',
           d3.forceLink(data.links)
             .id((d) => d.id)
-            // shorter distance + slightly stronger link -> subnetworks closer
             .distance((d) => 40 + (Math.sqrt(d.weight || 1) * 6))
             .strength(0.8)
         )
-        // weaker repulsion so nodes/components don't push so far apart
         .force('charge', d3.forceManyBody().strength(-60))
-        // keep general centering
         .force('center', d3.forceCenter(width / 2, height / 2))
-        // gentle pull toward the center on x/y to keep components close together
         .force('x', d3.forceX(width / 2).strength(0.08))
         .force('y', d3.forceY(height / 2).strength(0.08))
-        // small collision radius so nodes can pack reasonably close without overlap
-        .force('collision', d3.forceCollide().radius((d) => rScale(d.size || 10) + 4).iterations(2));
+        .force('collision', d3.forceCollide().radius((d) => rScale(getNodeSize(d)) + 4).iterations(2));
 
       simulation.on('tick', () => {
         link
