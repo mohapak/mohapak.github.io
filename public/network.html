@@ -5,7 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Board Network Visualization - Thesis Defense</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-tertiary: #1a1a24;
+      --bg-card: rgba(26, 26, 36, 0.8);
+      --bg-glass: rgba(255, 255, 255, 0.03);
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-medium: rgba(255, 255, 255, 0.1);
+      --text-primary: #f4f4f5;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --accent-primary: #6366f1;
+      --accent-secondary: #8b5cf6;
+      --accent-tertiary: #a855f7;
+      --accent-glow: rgba(99, 102, 241, 0.4);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+      --gradient-dark: linear-gradient(180deg, #12121a 0%, #0a0a0f 100%);
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 16px 64px rgba(0, 0, 0, 0.5);
+      --shadow-glow: 0 0 40px var(--accent-glow);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -17,488 +53,1224 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
-      background: radial-gradient(circle at top, #1d2140 0, #020617 40%, #020617 100%);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       overflow-x: hidden;
-      overflow-y: auto;
-      color: #0f172a;
+      color: var(--text-primary);
+      line-height: 1.5;
     }
 
+    /* Animated background */
+    .bg-gradient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(ellipse 80% 50% at 20% -20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+        var(--bg-primary);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Header */
     .header {
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(14px);
-      padding: 1.1rem 2.5rem;
-      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.6);
-      border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border-subtle);
       position: sticky;
       top: 0;
       z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
     }
 
-    .header h1 {
-      font-size: 1.4rem;
-      color: #e5e7eb;
-      margin: 0;
-      font-weight: 650;
-      letter-spacing: 0.03em;
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
 
-    .header p {
-      font-size: 0.9rem;
-      color: #94a3b8;
-      margin-top: 0.25rem;
+    .logo {
+      width: 40px;
+      height: 40px;
+      background: var(--gradient-primary);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.2rem;
+      box-shadow: var(--shadow-glow);
     }
 
+    .header-title h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .header-title p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* Main container */
     .container {
       flex: 1;
       display: flex;
-      padding: 1.5rem 2rem 2rem;
-      gap: 1.5rem;
-      max-width: 1440px;
+      padding: 1.25rem;
+      gap: 1.25rem;
+      max-width: 1600px;
       width: 100%;
       margin: 0 auto;
+      position: relative;
+      z-index: 1;
     }
 
+    /* Main content area */
     .main-content {
       flex: 1;
-      background: radial-gradient(circle at top left, #f9fafb 0, #e5f0ff 45%, #eef2ff 100%);
-      border-radius: 18px;
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.55);
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-subtle);
       overflow: hidden;
       position: relative;
       display: flex;
       flex-direction: column;
-      backdrop-filter: blur(10px);
-      min-height: 500px; /* FIX: Ensure minimum height */
+      min-height: 600px;
+      box-shadow: var(--shadow-lg);
     }
 
-    .controls {
-      padding: 0.9rem 1.15rem;
-      background: rgba(248, 250, 252, 0.92);
-      border-bottom: 1px solid rgba(203, 213, 225, 0.8);
+    /* Toolbar */
+    .toolbar {
+      padding: 0.875rem 1.25rem;
+      background: var(--bg-glass);
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
-      gap: 0.75rem;
       align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
       flex-wrap: wrap;
     }
 
-    .year-selector {
-      display: inline-flex;
+    .toolbar-left {
+      display: flex;
       align-items: center;
-      gap: 0.6rem;
-      padding: 0.45rem 0.9rem;
-      background: white;
-      border: 1px solid rgba(14, 165, 233, 0.4);
-      border-radius: 999px;
-      font-weight: 500;
-      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+      gap: 0.75rem;
+    }
+
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Year selector */
+    .year-selector {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.875rem;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      transition: var(--transition-fast);
+    }
+
+    .year-selector:hover {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
 
     .year-selector label {
-      font-size: 0.8rem;
-      color: #0f172a;
-      font-weight: 600;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
     }
 
     .year-selector select {
-      padding: 0.25rem 0.7rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 999px;
-      font-size: 0.8rem;
+      padding: 0.25rem 0.5rem;
+      background: transparent;
+      border: none;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      font-weight: 600;
       cursor: pointer;
-      background: #f8fafc;
-      color: #0f172a;
-      font-weight: 500;
       outline: none;
-      transition: all 0.18s ease-out;
+      font-family: inherit;
     }
 
-    .year-selector select:hover {
-      border-color: #0ea5e9;
-      background: #eff6ff;
+    .year-selector select option {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
     }
 
-    .year-selector select:focus {
-      border-color: #0ea5e9;
-      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+    /* Search box */
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.875rem;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      transition: var(--transition-fast);
+      min-width: 200px;
     }
 
-    button {
-      padding: 0.45rem 1rem;
-      background: linear-gradient(135deg, #0ea5e9, #2563eb);
-      color: white;
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      border-radius: 999px;
-      cursor: pointer;
+    .search-box:focus-within {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .search-box svg {
+      width: 16px;
+      height: 16px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .search-box input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      outline: none;
+      font-family: inherit;
+      min-width: 0;
+    }
+
+    .search-box input::placeholder {
+      color: var(--text-muted);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.375rem;
+      padding: 0.5rem 0.875rem;
       font-size: 0.8rem;
       font-weight: 500;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      transition: all 0.18s ease-out;
-      box-shadow: 0 12px 28px rgba(37, 99, 235, 0.35);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition-fast);
+      border: 1px solid transparent;
+      font-family: inherit;
+      white-space: nowrap;
     }
 
-    button:hover {
-      background: linear-gradient(135deg, #0284c7, #1d4ed8);
+    .btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .btn-primary {
+      background: var(--gradient-primary);
+      color: white;
+      box-shadow: var(--shadow-sm), 0 0 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-primary:hover {
       transform: translateY(-1px);
-      box-shadow: 0 16px 36px rgba(37, 99, 235, 0.45);
+      box-shadow: var(--shadow-md), 0 0 30px rgba(99, 102, 241, 0.4);
     }
 
-    button:active {
-      transform: translateY(0);
-      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      border-color: var(--border-medium);
     }
 
-    button:disabled {
-      background: #cbd5e1;
+    .btn-secondary:hover {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border-color: var(--accent-primary);
+    }
+
+    .btn-icon {
+      padding: 0.5rem;
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      border-color: var(--border-medium);
+    }
+
+    .btn-icon:hover {
+      color: var(--text-primary);
+      border-color: var(--accent-primary);
+      background: rgba(99, 102, 241, 0.1);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
       cursor: not-allowed;
-      box-shadow: none;
-      transform: none;
+      transform: none !important;
     }
 
+    /* Network SVG */
     #network {
       flex: 1;
       width: 100%;
-      min-height: 400px; /* FIX: Ensure SVG has height */
-      height: 100%;
+      min-height: 500px;
       cursor: grab;
-      background: radial-gradient(circle at center, #ffffff 0, #eff6ff 50%, #e5e7eb 100%);
-      touch-action: pan-y;
+      background: 
+        radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.03) 0%, transparent 50%),
+        var(--bg-secondary);
     }
 
     #network:active {
       cursor: grabbing;
     }
 
-    .sidebar {
-      width: 300px;
-      background: rgba(15, 23, 42, 0.96);
-      border-radius: 18px;
-      border: 1px solid rgba(148, 163, 184, 0.5);
-      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.85);
-      padding: 1.4rem 1.3rem 1.5rem;
-      overflow-y: auto;
-      color: #e5e7eb;
-      max-height: none;
-    }
-
-    .sidebar h3 {
-      font-size: 1.05rem;
-      color: #f9fafb;
-      margin-bottom: 0.9rem;
+    /* Year badge */
+    .year-badge {
+      position: absolute;
+      top: 4.5rem;
+      left: 1.25rem;
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      color: var(--text-primary);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-lg);
       font-weight: 600;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      font-size: 1.5rem;
+      box-shadow: var(--shadow-md);
+      z-index: 10;
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
-    .stat-card {
-      background: radial-gradient(circle at top, rgba(30, 64, 175, 0.9), rgba(15, 23, 42, 0.95));
-      padding: 0.9rem 0.95rem;
-      border-radius: 12px;
-      margin-bottom: 0.85rem;
-      border: 1px solid rgba(129, 140, 248, 0.45);
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+    .year-badge::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
+    /* Mini map */
+    .mini-map {
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      width: 150px;
+      height: 100px;
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      z-index: 10;
+    }
+
+    .mini-map-viewport {
+      stroke: var(--accent-primary);
+      stroke-width: 2;
+      fill: rgba(99, 102, 241, 0.1);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .sidebar-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+
+    .sidebar-card-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sidebar-card-header h3 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .sidebar-card-header h3 svg {
+      width: 16px;
+      height: 16px;
+      color: var(--accent-primary);
+    }
+
+    .sidebar-card-content {
+      padding: 1rem 1.25rem;
+    }
+
+    /* Stats grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
+    .stat-item {
+      background: var(--bg-glass);
+      padding: 0.875rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      transition: var(--transition-fast);
+    }
+
+    .stat-item:hover {
+      border-color: var(--accent-primary);
+      background: rgba(99, 102, 241, 0.05);
     }
 
     .stat-label {
       font-size: 0.7rem;
-      color: #cbd5f5;
+      color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 0.2rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
     }
 
     .stat-value {
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       font-weight: 700;
-      color: #bfdbfe;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
-    .info-text {
-      font-size: 0.85rem;
-      color: #cbd5f5;
-      line-height: 1.6;
+    .stat-change {
+      font-size: 0.7rem;
+      color: var(--success);
+      margin-top: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
     }
 
-    .info-text strong {
-      color: #e5e7eb;
+    .stat-change.negative {
+      color: var(--error);
     }
 
+    /* Legend */
+    .legend-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      padding: 0.5rem 0.625rem;
+      background: var(--bg-glass);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition-fast);
+      border: 1px solid transparent;
+    }
+
+    .legend-item:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: var(--border-medium);
+    }
+
+    .legend-item.active {
+      border-color: var(--accent-primary);
+      background: rgba(99, 102, 241, 0.15);
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .legend-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .legend-count {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Help section */
+    .help-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .help-item {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+
+    .help-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--bg-glass);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.875rem;
+    }
+
+    .help-text {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .help-text strong {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    /* Tooltip */
     .tooltip {
       position: absolute;
       pointer-events: none;
       opacity: 0;
-      background: rgba(15, 23, 42, 0.97);
-      color: #f9fafb;
-      padding: 0.7rem 0.95rem;
-      border-radius: 0.9rem;
-      font-size: 0.9rem;
-      line-height: 1.6;
-      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.7);
-      transition: opacity 0.15s ease-out;
-      max-width: 280px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      padding: 0;
+      border-radius: var(--radius-lg);
+      font-size: 0.875rem;
+      box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-subtle);
+      transition: opacity var(--transition-fast);
+      max-width: 300px;
       z-index: 1000;
-      border: 1px solid rgba(148, 163, 184, 0.7);
-      backdrop-filter: blur(6px);
-      white-space: normal;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+    }
+
+    .tooltip-header {
+      padding: 0.875rem 1rem;
+      background: var(--bg-glass);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .tooltip-type {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent-primary);
+      font-weight: 600;
+      margin-bottom: 0.25rem;
     }
 
     .tooltip-title {
       font-weight: 600;
       font-size: 0.95rem;
-      margin-bottom: 0.25rem;
-      color: #e5e7eb;
+      color: var(--text-primary);
+      line-height: 1.3;
     }
 
-    .tooltip-subtitle {
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: #9ca3af;
-      margin-bottom: 0.4rem;
+    .tooltip-body {
+      padding: 0.75rem 1rem;
     }
 
     .tooltip-row {
       display: flex;
       justify-content: space-between;
-      gap: 0.75rem;
-      font-size: 0.82rem;
-      color: #cbd5f5;
-    }
-
-    .tooltip-chip {
-      display: inline-flex;
       align-items: center;
-      padding: 0.15rem 0.45rem;
-      border-radius: 999px;
+      padding: 0.375rem 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .tooltip-row:last-child {
+      border-bottom: none;
+    }
+
+    .tooltip-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .tooltip-value {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .tooltip-footer {
+      padding: 0.625rem 1rem;
+      background: var(--bg-glass);
+      border-top: 1px solid var(--border-subtle);
       font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      background: rgba(37, 99, 235, 0.26);
-      color: #bfdbfe;
-      margin-right: 0.3rem;
+      color: var(--text-muted);
+      text-align: center;
     }
 
-    .tooltip-separator {
-      margin: 0.35rem 0;
-      border-top: 1px solid rgba(55, 65, 81, 0.9);
-    }
-
+    /* Loading */
     .loading {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      z-index: 50; /* FIX: Ensure loading is above SVG */
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 10, 15, 0.9);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
     }
 
     .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #e2e8f0;
-      border-top-color: #0ea5e9;
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--border-medium);
+      border-top-color: var(--accent-primary);
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin: 0 auto 1rem;
+      margin-bottom: 1rem;
     }
 
     @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
+      to { transform: rotate(360deg); }
     }
 
     .loading-text {
-      font-size: 1.05rem;
-      color: #64748b;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
     }
 
-    .year-badge {
+    .loading-progress {
+      width: 200px;
+      height: 4px;
+      background: var(--bg-tertiary);
+      border-radius: 2px;
+      margin-top: 1rem;
+      overflow: hidden;
+    }
+
+    .loading-progress-bar {
+      height: 100%;
+      background: var(--gradient-primary);
+      width: 0%;
+      animation: loading-progress 2s ease-in-out infinite;
+    }
+
+    @keyframes loading-progress {
+      0% { width: 0%; margin-left: 0; }
+      50% { width: 60%; margin-left: 20%; }
+      100% { width: 0%; margin-left: 100%; }
+    }
+
+    /* Node details panel */
+    .node-details {
       position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background: rgba(15, 23, 42, 0.92);
-      color: #e5e7eb;
-      padding: 0.45rem 1.15rem;
-      border-radius: 999px;
-      font-weight: 650;
-      font-size: 1rem;
-      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.7);
-      z-index: 10;
-      letter-spacing: 0.06em;
+      top: 4.5rem;
+      right: 1.25rem;
+      width: 280px;
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-lg);
+      z-index: 20;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateX(20px);
+      transition: var(--transition-normal);
+      pointer-events: none;
+    }
+
+    .node-details.visible {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    .node-details-header {
+      padding: 1rem;
+      background: var(--bg-glass);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .node-details-close {
+      width: 24px;
+      height: 24px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-fast);
+      flex-shrink: 0;
+    }
+
+    .node-details-close:hover {
+      background: var(--error);
+      border-color: var(--error);
+      color: white;
+    }
+
+    .node-details-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+
+    .node-details-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .node-details-body {
+      padding: 1rem;
+    }
+
+    .node-details-section {
+      margin-bottom: 1rem;
+    }
+
+    .node-details-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .node-details-section-title {
+      font-size: 0.7rem;
       text-transform: uppercase;
-      border: 1px solid rgba(148, 163, 184, 0.7);
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .centrality-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .centrality-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .centrality-bar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .centrality-bar-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .centrality-bar-value {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .centrality-bar-track {
+      height: 4px;
+      background: var(--bg-tertiary);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .centrality-bar-fill {
+      height: 100%;
+      background: var(--gradient-primary);
+      border-radius: 2px;
+      transition: width var(--transition-normal);
+    }
+
+    /* Zoom controls */
+    .zoom-controls {
+      position: absolute;
+      bottom: 1rem;
+      left: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      z-index: 10;
+    }
+
+    .zoom-btn {
+      width: 36px;
+      height: 36px;
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-fast);
+      font-size: 1.25rem;
+      font-weight: 300;
+    }
+
+    .zoom-btn:hover {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: var(--accent-primary);
+      color: var(--text-primary);
+    }
+
+    .zoom-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .sidebar {
+        width: 280px;
+      }
+      
+      .search-box {
+        min-width: 150px;
+      }
     }
 
     @media (max-width: 1024px) {
       .container {
-        padding: 1rem;
         flex-direction: column;
+        padding: 1rem;
       }
 
       .sidebar {
         width: 100%;
-        margin-top: 1rem;
-        max-height: none;
+        flex-direction: row;
+        flex-wrap: wrap;
       }
 
-      .header {
-        padding: 0.9rem 1.4rem;
+      .sidebar-card {
+        flex: 1;
+        min-width: 280px;
       }
-      
+
       .main-content {
-        min-height: 400px;
+        min-height: 500px;
+      }
+
+      .mini-map {
+        display: none;
       }
     }
 
-    @media (max-width: 640px) {
-      .controls {
-        padding: 0.8rem;
+    @media (max-width: 768px) {
+      .header {
+        padding: 0.875rem 1rem;
+        flex-wrap: wrap;
       }
 
-      .year-selector {
+      .header-title h1 {
+        font-size: 0.95rem;
+      }
+
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .toolbar-left,
+      .toolbar-right {
+        justify-content: center;
+      }
+
+      .search-box {
         width: 100%;
-        justify-content: space-between;
       }
 
-      .container {
-        padding: 0.75rem;
+      .year-badge {
+        top: auto;
+        bottom: 4rem;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 1.25rem;
       }
 
-      .header h1 {
-        font-size: 1.1rem;
+      .node-details {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        max-height: 50vh;
+        overflow-y: auto;
+        transform: translateY(100%);
       }
 
-      .header p {
-        font-size: 0.8rem;
+      .node-details.visible {
+        transform: translateY(0);
       }
-      
-      .main-content {
-        min-height: 350px;
+
+      .sidebar-card {
+        min-width: 100%;
       }
-      
-      #network {
-        min-height: 300px;
+    }
+
+    @media (max-width: 480px) {
+      .header-actions {
+        display: none;
       }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .zoom-controls {
+        flex-direction: row;
+      }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-tertiary);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-medium);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    /* Selection */
+    ::selection {
+      background: rgba(99, 102, 241, 0.3);
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>The Effect of Board of Directors Network on Firm Performance</h1>
-    <p>Tehran Stock Exchange - Interactive Network Visualization | Mohammad Mehdi Pakravan</p>
-  </div>
+  <div class="bg-gradient"></div>
 
-  <div class="container">
-    <div class="main-content">
-      <div class="controls">
-        <div class="year-selector">
-          <label for="yearSelect">📅 Year</label>
-          <select id="yearSelect">
-            <option value="2016">2016 (1395)</option>
-            <option value="2017">2017 (1396)</option>
-            <option value="2018">2018 (1397)</option>
-            <option value="2019">2019 (1398)</option>
-            <option value="2020">2020 (1399)</option>
-            <option value="2021">2021 (1400)</option>
-            <option value="2022">2022 (1401)</option>
-            <option value="2023">2023 (1402)</option>
-            <option value="2024" selected>2024 (1403)</option>
-          </select>
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">B</div>
+      <div class="header-title">
+        <h1>Board Directors Network Analysis</h1>
+        <p>Tehran Stock Exchange • Interactive Visualization</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" id="exportBtn">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        Export
+      </button>
+      <button class="btn btn-primary" id="fullscreenBtn">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+        </svg>
+        Fullscreen
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="main-content">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <div class="year-selector">
+            <label for="yearSelect">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              Year
+            </label>
+            <select id="yearSelect">
+              <option value="2016">2016 (1395)</option>
+              <option value="2017">2017 (1396)</option>
+              <option value="2018">2018 (1397)</option>
+              <option value="2019">2019 (1398)</option>
+              <option value="2020">2020 (1399)</option>
+              <option value="2021">2021 (1400)</option>
+              <option value="2022">2022 (1401)</option>
+              <option value="2023">2023 (1402)</option>
+              <option value="2024" selected>2024 (1403)</option>
+            </select>
+          </div>
+
+          <div class="search-box">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" id="searchInput" placeholder="Search firms...">
+          </div>
         </div>
 
-        <button id="resetBtn">Reset View</button>
-        <button id="centerBtn">Center Network</button>
+        <div class="toolbar-right">
+          <button class="btn btn-icon" id="resetBtn" title="Reset View">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </button>
+          <button class="btn btn-icon" id="centerBtn" title="Center Network">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+            </svg>
+          </button>
+          <button class="btn btn-icon" id="playBtn" title="Auto Layout">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div class="year-badge" id="yearBadge">2024</div>
+      
       <svg id="network"></svg>
-      <div class="loading">
+
+      <div class="zoom-controls">
+        <button class="zoom-btn" id="zoomIn" title="Zoom In">+</button>
+        <button class="zoom-btn" id="zoomOut" title="Zoom Out">−</button>
+        <button class="zoom-btn" id="zoomFit" title="Fit to View">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="mini-map" id="miniMap">
+        <svg id="miniMapSvg"></svg>
+      </div>
+
+      <div class="node-details" id="nodeDetails">
+        <div class="node-details-header">
+          <div>
+            <div class="node-details-title" id="nodeDetailsTitle">Firm Name</div>
+            <div class="node-details-subtitle" id="nodeDetailsSubtitle">Sector</div>
+          </div>
+          <button class="node-details-close" id="nodeDetailsClose">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="node-details-body">
+          <div class="node-details-section">
+            <div class="node-details-section-title">Centrality Metrics</div>
+            <div class="centrality-bars" id="centralityBars"></div>
+          </div>
+          <div class="node-details-section">
+            <div class="node-details-section-title">Connections</div>
+            <div id="connectionsList" style="font-size: 0.8rem; color: var(--text-secondary);"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="loading" id="loading">
         <div class="loading-spinner"></div>
         <div class="loading-text">Loading network data...</div>
+        <div class="loading-progress">
+          <div class="loading-progress-bar"></div>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <div class="sidebar">
-      <h3>Network Statistics</h3>
-
-      <div class="stat-card">
-        <div class="stat-label">Total Firms</div>
-        <div class="stat-value" id="totalNodes">0</div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-label">Board Interlocks</div>
-        <div class="stat-value" id="totalLinks">0</div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-label">Average Connections</div>
-        <div class="stat-value" id="avgDegree">0</div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-label">Network Density</div>
-        <div class="stat-value" id="density">0%</div>
-      </div>
-
-      <h3 style="margin-top: 2rem;">How to Interact</h3>
-      <div class="info-text">
-        <p style="margin-bottom: 0.75rem;">
-          <strong>📅 Select Year</strong> to view different periods of the board network.
-        </p>
-        <p style="margin-bottom: 0.75rem;">
-          <strong>🖱️ Desktop:</strong> drag nodes, zoom with the mouse wheel, and pan the network.
-        </p>
-        <p style="margin-bottom: 0.75rem;">
-          <strong>📱 Mobile:</strong> scroll the page normally, tap nodes or links to view details.
-        </p>
-        <p>
-          <strong>🎯 Reset View</strong> re-centers and resets zoom on the network.
-        </p>
+    <aside class="sidebar">
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">
+          <h3>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            Network Statistics
+          </h3>
+        </div>
+        <div class="sidebar-card-content">
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-label">Total Firms</div>
+              <div class="stat-value" id="totalNodes">0</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Interlocks</div>
+              <div class="stat-value" id="totalLinks">0</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Avg. Degree</div>
+              <div class="stat-value" id="avgDegree">0</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Density</div>
+              <div class="stat-value" id="density">0%</div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <h3 style="margin-top: 2rem;">Metrics</h3>
-      <div class="info-text">
-        <p style="margin-bottom: 0.75rem;">
-          • <strong>Node size:</strong> Degree centrality (number of board connections).
-        </p>
-        <p style="margin-bottom: 0.75rem;">
-          • <strong>Link thickness:</strong> Number of shared directors between firms.
-        </p>
-        <p>• <strong>Colors:</strong> Firms Sector.</p>
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">
+          <h3>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+            </svg>
+            Sectors
+          </h3>
+        </div>
+        <div class="sidebar-card-content">
+          <div class="legend-list" id="legendList">
+            <!-- Populated by JS -->
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">
+          <h3>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            How to Use
+          </h3>
+        </div>
+        <div class="sidebar-card-content">
+          <div class="help-list">
+            <div class="help-item">
+              <div class="help-icon">🖱️</div>
+              <div class="help-text"><strong>Drag</strong> nodes to reposition them</div>
+            </div>
+            <div class="help-item">
+              <div class="help-icon">🔍</div>
+              <div class="help-text"><strong>Scroll</strong> to zoom in/out</div>
+            </div>
+            <div class="help-item">
+              <div class="help-icon">👆</div>
+              <div class="help-text"><strong>Click</strong> a node to see details</div>
+            </div>
+            <div class="help-item">
+              <div class="help-icon">🔎</div>
+              <div class="help-text"><strong>Search</strong> to find specific firms</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
 
   <script>
-    // State
+    // ==================== STATE ====================
     let currentYear = '2024';
     let simulation = null;
     let transform = d3.zoomIdentity;
-    let svg, g, zoom;
+    let svg, g, zoom, miniMapSvg, miniMapG;
+    let currentData = null;
     let resizeHandler = null;
-    let tooltipPinned = false;
+    let selectedNode = null;
+    let highlightedSector = null;
+    let searchTerm = '';
 
-    // Elements
+    // ==================== ELEMENTS ====================
     const yearSelect = document.getElementById('yearSelect');
     const yearBadge = document.getElementById('yearBadge');
-    const loading = d3.select('.loading');
+    const loading = document.getElementById('loading');
+    const searchInput = document.getElementById('searchInput');
+    const nodeDetails = document.getElementById('nodeDetails');
+    const legendList = document.getElementById('legendList');
+
+    // ==================== TOOLTIP ====================
     const tooltip = d3.select('body').append('div').attr('class', 'tooltip');
 
+    // ==================== UTILITIES ====================
     function formatNumber(value, decimals = 3) {
       if (value == null || !isFinite(value)) return '—';
       return value.toFixed(decimals);
     }
 
-    // Compute centralities and attach to nodes
+    function debounce(fn, delay) {
+      let timeout;
+      return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn(...args), delay);
+      };
+    }
+
+    // ==================== CENTRALITY COMPUTATION ====================
     function computeCentralities(data) {
       const nodes = data.nodes;
       const links = data.links;
@@ -506,9 +1278,7 @@
       if (!n) return;
 
       const idToIndex = new Map();
-      nodes.forEach((node, i) => {
-        idToIndex.set(node.id, i);
-      });
+      nodes.forEach((node, i) => idToIndex.set(node.id, i));
 
       function getIndex(ref) {
         if (typeof ref === 'number' && ref >= 0 && ref < n) return ref;
@@ -523,7 +1293,7 @@
         return null;
       }
 
-      // Build adjacency list for undirected graph
+      // Build adjacency list
       const adj = Array.from({ length: n }, () => []);
       links.forEach((l) => {
         const u = getIndex(l.source);
@@ -533,40 +1303,32 @@
         adj[v].push(u);
       });
 
-      // Degree centrality
+      // Degree
       const degree = adj.map(neighbors => neighbors.length);
 
-      // Closeness centrality
+      // Closeness
       const closeness = new Array(n).fill(0);
       for (let s = 0; s < n; s++) {
         const dist = new Array(n).fill(-1);
         const queue = [s];
         dist[s] = 0;
-        let head = 0;
-        let visitedCount = 1;
-        let distSum = 0;
+        let head = 0, visitedCount = 1, distSum = 0;
 
         while (head < queue.length) {
           const v = queue[head++];
-          const dv = dist[v];
           for (const w of adj[v]) {
             if (dist[w] === -1) {
-              dist[w] = dv + 1;
-              distSum += dv + 1;
+              dist[w] = dist[v] + 1;
+              distSum += dist[w];
               visitedCount++;
               queue.push(w);
             }
           }
         }
-
-        if (distSum > 0 && visitedCount > 1) {
-          closeness[s] = (visitedCount - 1) / distSum;
-        } else {
-          closeness[s] = 0;
-        }
+        closeness[s] = distSum > 0 && visitedCount > 1 ? (visitedCount - 1) / distSum : 0;
       }
 
-      // Betweenness centrality (Brandes algorithm, unweighted)
+      // Betweenness (Brandes)
       const betweenness = new Array(n).fill(0);
       for (let s = 0; s < n; s++) {
         const stack = [];
@@ -602,440 +1364,576 @@
               delta[v] += (sigma[v] / sigma[w]) * (1 + delta[w]);
             }
           }
-          if (w !== s) {
-            betweenness[w] += delta[w];
-          }
+          if (w !== s) betweenness[w] += delta[w];
         }
       }
 
-      // Eigenvector centrality via power iteration
+      // Eigenvector (power iteration)
       let eigen = new Array(n).fill(1 / n);
-      const maxIter = 100;
-      const tol = 1e-6;
-      for (let iter = 0; iter < maxIter; iter++) {
+      for (let iter = 0; iter < 100; iter++) {
         const next = new Array(n).fill(0);
         for (let v = 0; v < n; v++) {
-          for (const w of adj[v]) {
-            next[v] += eigen[w];
-          }
+          for (const w of adj[v]) next[v] += eigen[w];
         }
-        let norm = 0;
-        for (let i = 0; i < n; i++) norm += next[i] * next[i];
-        norm = Math.sqrt(norm);
+        let norm = Math.sqrt(next.reduce((a, b) => a + b * b, 0));
         if (norm === 0) break;
         for (let i = 0; i < n; i++) next[i] /= norm;
 
-        let diff = 0;
-        for (let i = 0; i < n; i++) {
-          diff += Math.abs(next[i] - eigen[i]);
-        }
+        let diff = next.reduce((a, b, i) => a + Math.abs(b - eigen[i]), 0);
         eigen = next;
-        if (diff < tol) break;
+        if (diff < 1e-6) break;
       }
 
-      // Normalize values for optional use
-      const maxDeg = Math.max(...degree, 0);
-      const maxClose = Math.max(...closeness, 0);
-      const maxBet = Math.max(...betweenness, 0);
-      const maxEig = Math.max(...eigen, 0);
+      // Normalize
+      const maxDeg = Math.max(...degree, 1);
+      const maxClose = Math.max(...closeness, 0.001);
+      const maxBet = Math.max(...betweenness, 0.001);
+      const maxEig = Math.max(...eigen, 0.001);
 
       nodes.forEach((node, i) => {
         node.centrality = {
           degree: degree[i],
-          degreeNorm: maxDeg ? degree[i] / maxDeg : 0,
+          degreeNorm: degree[i] / maxDeg,
           closeness: closeness[i],
-          closenessNorm: maxClose ? closeness[i] / maxClose : 0,
+          closenessNorm: closeness[i] / maxClose,
           betweenness: betweenness[i],
-          betweennessNorm: maxBet ? betweenness[i] / maxBet : 0,
+          betweennessNorm: betweenness[i] / maxBet,
           eigenvector: eigen[i],
-          eigenNorm: maxEig ? eigen[i] / maxEig : 0
+          eigenNorm: eigen[i] / maxEig
         };
+        node.neighbors = adj[i];
       });
     }
 
-    // Tooltip positioning helper (keeps tooltip fully visible)
+    // ==================== TOOLTIP HELPERS ====================
     function positionTooltip(event) {
-      const tooltipNode = tooltip.node();
-      const padding = 12;
-      const tooltipWidth = tooltipNode.offsetWidth || 160;
-      const tooltipHeight = tooltipNode.offsetHeight || 80;
+      const node = tooltip.node();
+      const padding = 16;
+      const w = node.offsetWidth || 200;
+      const h = node.offsetHeight || 100;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const sx = window.pageXOffset;
+      const sy = window.pageYOffset;
 
-      const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
-      const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
+      let x = event.pageX + 20;
+      let y = event.pageY + 20;
 
-      let x = event.pageX + 16;
-      let y = event.pageY + 16;
-
-      if (x + tooltipWidth + padding > scrollX + viewportWidth) {
-        x = scrollX + viewportWidth - tooltipWidth - padding;
-      }
-      if (y + tooltipHeight + padding > scrollY + viewportHeight) {
-        y = scrollY + viewportHeight - tooltipHeight - padding;
-      }
-      
-      // FIX: Ensure tooltip doesn't go off-screen to the left or top
-      if (x < scrollX + padding) {
-        x = scrollX + padding;
-      }
-      if (y < scrollY + padding) {
-        y = scrollY + padding;
-      }
+      if (x + w + padding > sx + vw) x = sx + vw - w - padding;
+      if (y + h + padding > sy + vh) y = sy + vh - h - padding;
+      if (x < sx + padding) x = sx + padding;
+      if (y < sy + padding) y = sy + padding;
 
       tooltip.style('left', `${x}px`).style('top', `${y}px`);
     }
 
     function showNodeTooltip(event, d) {
-      const title = d.label || d.id || 'Node';
       const c = d.centrality || {};
-      tooltip
-        .style('opacity', 1)
-        .html(`
-          <div class="tooltip-subtitle">Firm</div>
-          <div class="tooltip-title">${title}</div>
-          <div class="tooltip-separator"></div>
+      tooltip.style('opacity', 1).html(`
+        <div class="tooltip-header">
+          <div class="tooltip-type">Firm</div>
+          <div class="tooltip-title">${d.label || d.id}</div>
+        </div>
+        <div class="tooltip-body">
           <div class="tooltip-row">
-            <span class="tooltip-chip">Degree</span>
-            <span>${c.degree != null ? c.degree : '—'}</span>
+            <span class="tooltip-label">Degree</span>
+            <span class="tooltip-value">${c.degree ?? '—'}</span>
           </div>
           <div class="tooltip-row">
-            <span class="tooltip-chip">Closeness</span>
-            <span>${formatNumber(c.closeness)}</span>
+            <span class="tooltip-label">Closeness</span>
+            <span class="tooltip-value">${formatNumber(c.closeness)}</span>
           </div>
           <div class="tooltip-row">
-            <span class="tooltip-chip">Betweenness</span>
-            <span>${formatNumber(c.betweenness)}</span>
+            <span class="tooltip-label">Betweenness</span>
+            <span class="tooltip-value">${formatNumber(c.betweenness)}</span>
           </div>
           <div class="tooltip-row">
-            <span class="tooltip-chip">Eigenvector</span>
-            <span>${formatNumber(c.eigenvector)}</span>
+            <span class="tooltip-label">Eigenvector</span>
+            <span class="tooltip-value">${formatNumber(c.eigenvector)}</span>
           </div>
-          ${d.id ? `
-          <div class="tooltip-separator"></div>
-          <div class="tooltip-row">
-            <span class="tooltip-chip">ID</span>
-            <span>${d.id}</span>
-          </div>` : ''}
-        `);
+        </div>
+        <div class="tooltip-footer">Click for detailed view</div>
+      `);
       positionTooltip(event);
     }
 
-    function showLinkTooltip(event, d, dataNodes) {
-      function getNodeLabel(nodeLike) {
-        if (typeof nodeLike === 'string' || typeof nodeLike === 'number') {
-          const match = dataNodes.find(n => n.id === nodeLike);
-          return match ? (match.label || match.id) : nodeLike;
+    function showLinkTooltip(event, d) {
+      const sourceLabel = typeof d.source === 'object' ? (d.source.label || d.source.id) : d.source;
+      const targetLabel = typeof d.target === 'object' ? (d.target.label || d.target.id) : d.target;
+      tooltip.style('opacity', 1).html(`
+        <div class="tooltip-header">
+          <div class="tooltip-type">Board Interlock</div>
+          <div class="tooltip-title">${sourceLabel} ↔ ${targetLabel}</div>
+        </div>
+        <div class="tooltip-body">
+          <div class="tooltip-row">
+            <span class="tooltip-label">Shared Directors</span>
+            <span class="tooltip-value">${d.weight || d.value || '—'}</span>
+          </div>
+        </div>
+      `);
+      positionTooltip(event);
+    }
+
+    function hideTooltip() {
+      tooltip.style('opacity', 0);
+    }
+
+    // ==================== NODE DETAILS PANEL ====================
+    function showNodeDetails(d) {
+      selectedNode = d;
+      nodeDetails.classList.add('visible');
+
+      document.getElementById('nodeDetailsTitle').textContent = d.label || d.id;
+      document.getElementById('nodeDetailsSubtitle').textContent = d.sector || 'Unknown Sector';
+
+      const c = d.centrality || {};
+      const bars = document.getElementById('centralityBars');
+      bars.innerHTML = `
+        <div class="centrality-bar">
+          <div class="centrality-bar-header">
+            <span class="centrality-bar-label">Degree</span>
+            <span class="centrality-bar-value">${c.degree ?? 0}</span>
+          </div>
+          <div class="centrality-bar-track">
+            <div class="centrality-bar-fill" style="width: ${(c.degreeNorm || 0) * 100}%"></div>
+          </div>
+        </div>
+        <div class="centrality-bar">
+          <div class="centrality-bar-header">
+            <span class="centrality-bar-label">Closeness</span>
+            <span class="centrality-bar-value">${formatNumber(c.closeness)}</span>
+          </div>
+          <div class="centrality-bar-track">
+            <div class="centrality-bar-fill" style="width: ${(c.closenessNorm || 0) * 100}%"></div>
+          </div>
+        </div>
+        <div class="centrality-bar">
+          <div class="centrality-bar-header">
+            <span class="centrality-bar-label">Betweenness</span>
+            <span class="centrality-bar-value">${formatNumber(c.betweenness)}</span>
+          </div>
+          <div class="centrality-bar-track">
+            <div class="centrality-bar-fill" style="width: ${(c.betweennessNorm || 0) * 100}%"></div>
+          </div>
+        </div>
+        <div class="centrality-bar">
+          <div class="centrality-bar-header">
+            <span class="centrality-bar-label">Eigenvector</span>
+            <span class="centrality-bar-value">${formatNumber(c.eigenvector)}</span>
+          </div>
+          <div class="centrality-bar-track">
+            <div class="centrality-bar-fill" style="width: ${(c.eigenNorm || 0) * 100}%"></div>
+          </div>
+        </div>
+      `;
+
+      // Show connections
+      const connList = document.getElementById('connectionsList');
+      if (d.neighbors && d.neighbors.length > 0 && currentData) {
+        const neighborLabels = d.neighbors.slice(0, 10).map(idx => {
+          const neighbor = currentData.nodes[idx];
+          return neighbor ? (neighbor.label || neighbor.id) : 'Unknown';
+        });
+        connList.innerHTML = neighborLabels.map(l => `• ${l}`).join('<br>');
+        if (d.neighbors.length > 10) {
+          connList.innerHTML += `<br><span style="color: var(--text-muted);">... and ${d.neighbors.length - 10} more</span>`;
         }
-        return nodeLike.label || nodeLike.id;
+      } else {
+        connList.innerHTML = 'No connections';
       }
 
-      const sourceLabel = getNodeLabel(d.source);
-      const targetLabel = getNodeLabel(d.target);
-      const shared = d.weight || d.value || null;
-
-      tooltip
-        .style('opacity', 1)
-        .html(`
-          <div class="tooltip-subtitle">Board Interlock</div>
-          <div class="tooltip-title">${sourceLabel} ⟷ ${targetLabel}</div>
-          <div class="tooltip-separator"></div>
-          <div class="tooltip-row">
-            <span class="tooltip-chip">Shared Directors</span>
-            <span>${shared != null ? shared : '—'}</span>
-          </div>
-        `);
-      positionTooltip(event);
+      // Highlight node and connections
+      highlightNode(d);
     }
 
-    // Initialize
-    svg = d3.select('#network');
+    function hideNodeDetails() {
+      selectedNode = null;
+      nodeDetails.classList.remove('visible');
+      resetHighlight();
+    }
 
-    // Year change handler
-    yearSelect.addEventListener('change', (e) => {
+    function highlightNode(d) {
+      if (!currentData) return;
+
+      const neighborSet = new Set(d.neighbors || []);
+      const nodeIndex = currentData.nodes.indexOf(d);
+
+      g.selectAll('.nodes circle')
+        .transition().duration(200)
+        .attr('opacity', (n) => {
+          const idx = currentData.nodes.indexOf(n);
+          return idx === nodeIndex || neighborSet.has(idx) ? 1 : 0.15;
+        })
+        .attr('stroke-width', (n) => n === d ? 4 : 2);
+
+      g.selectAll('.links line')
+        .transition().duration(200)
+        .attr('opacity', (l) => {
+          const sIdx = currentData.nodes.indexOf(l.source);
+          const tIdx = currentData.nodes.indexOf(l.target);
+          return sIdx === nodeIndex || tIdx === nodeIndex ? 1 : 0.05;
+        })
+        .attr('stroke', (l) => {
+          const sIdx = currentData.nodes.indexOf(l.source);
+          const tIdx = currentData.nodes.indexOf(l.target);
+          return sIdx === nodeIndex || tIdx === nodeIndex ? '#6366f1' : '#64748b';
+        });
+    }
+
+    function resetHighlight() {
+      if (!g) return;
+
+      g.selectAll('.nodes circle')
+        .transition().duration(200)
+        .attr('opacity', 1)
+        .attr('stroke-width', 2);
+
+      g.selectAll('.links line')
+        .transition().duration(200)
+        .attr('opacity', 0.6)
+        .attr('stroke', '#64748b');
+    }
+
+    // ==================== LEGEND ====================
+    function buildLegend(data) {
+      const sectors = {};
+      data.nodes.forEach(n => {
+        const sector = n.sector || 'Unknown';
+        const color = n.color || '#6366f1';
+        if (!sectors[sector]) {
+          sectors[sector] = { color, count: 0 };
+        }
+        sectors[sector].count++;
+      });
+
+      const sorted = Object.entries(sectors).sort((a, b) => b[1].count - a[1].count);
+
+      legendList.innerHTML = sorted.map(([sector, { color, count }]) => `
+        <div class="legend-item" data-sector="${sector}">
+          <div class="legend-color" style="background: ${color}"></div>
+          <div class="legend-label">${sector}</div>
+          <div class="legend-count">${count}</div>
+        </div>
+      `).join('');
+
+      // Click to filter
+      legendList.querySelectorAll('.legend-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const sector = item.dataset.sector;
+          if (highlightedSector === sector) {
+            highlightedSector = null;
+            item.classList.remove('active');
+            resetHighlight();
+          } else {
+            highlightedSector = sector;
+            legendList.querySelectorAll('.legend-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            highlightSector(sector);
+          }
+        });
+      });
+    }
+
+    function highlightSector(sector) {
+      if (!currentData || !g) return;
+
+      g.selectAll('.nodes circle')
+        .transition().duration(200)
+        .attr('opacity', n => (n.sector || 'Unknown') === sector ? 1 : 0.15);
+
+      g.selectAll('.links line')
+        .transition().duration(200)
+        .attr('opacity', l => {
+          const sSector = l.source.sector || 'Unknown';
+          const tSector = l.target.sector || 'Unknown';
+          return sSector === sector || tSector === sector ? 0.6 : 0.05;
+        });
+    }
+
+    // ==================== SEARCH ====================
+    function handleSearch(term) {
+      searchTerm = term.toLowerCase();
+      if (!currentData || !g) return;
+
+      if (!searchTerm) {
+        resetHighlight();
+        return;
+      }
+
+      g.selectAll('.nodes circle')
+        .transition().duration(200)
+        .attr('opacity', n => {
+          const label = (n.label || n.id || '').toLowerCase();
+          return label.includes(searchTerm) ? 1 : 0.15;
+        });
+
+      g.selectAll('.links line')
+        .transition().duration(200)
+        .attr('opacity', 0.1);
+    }
+
+    // ==================== INITIALIZE ====================
+    svg = d3.select('#network');
+    miniMapSvg = d3.select('#miniMapSvg');
+
+    // Event listeners
+    yearSelect.addEventListener('change', e => {
       currentYear = e.target.value;
       loadYear(currentYear);
     });
 
-    // Hide pinned tooltip on background click (desktop & mobile)
-    svg.on('click', (event) => {
-      // Only hide if clicking on SVG background, not on nodes/links
-      if (event.target === svg.node()) {
-        if (tooltipPinned) {
-          tooltipPinned = false;
-          tooltip.style('opacity', 0);
-        }
+    searchInput.addEventListener('input', debounce(e => handleSearch(e.target.value), 200));
+
+    document.getElementById('nodeDetailsClose').addEventListener('click', hideNodeDetails);
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      hideTooltip();
+      hideNodeDetails();
+      highlightedSector = null;
+      legendList.querySelectorAll('.legend-item').forEach(i => i.classList.remove('active'));
+      searchInput.value = '';
+      searchTerm = '';
+      resetHighlight();
+      svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
+    });
+
+    document.getElementById('centerBtn').addEventListener('click', () => {
+      if (simulation) simulation.alpha(0.5).restart();
+    });
+
+    document.getElementById('playBtn').addEventListener('click', () => {
+      if (simulation) simulation.alpha(1).restart();
+    });
+
+    document.getElementById('zoomIn').addEventListener('click', () => {
+      svg.transition().duration(300).call(zoom.scaleBy, 1.5);
+    });
+
+    document.getElementById('zoomOut').addEventListener('click', () => {
+      svg.transition().duration(300).call(zoom.scaleBy, 0.67);
+    });
+
+    document.getElementById('zoomFit').addEventListener('click', () => {
+      fitToView();
+    });
+
+    document.getElementById('fullscreenBtn').addEventListener('click', () => {
+      const main = document.querySelector('.main-content');
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        main.requestFullscreen();
       }
     });
-    
-    // Also hide tooltip when clicking anywhere on document
-    document.addEventListener('click', (event) => {
-      if (tooltipPinned && !event.target.closest('.nodes') && !event.target.closest('.links')) {
-        // Small delay to allow node click to register first
-        setTimeout(() => {
-          if (tooltipPinned && !event.defaultPrevented) {
-            tooltipPinned = false;
-            tooltip.style('opacity', 0);
-          }
-        }, 10);
-      }
+
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      exportSVG();
     });
 
     // Load initial year
     loadYear(currentYear);
 
+    // ==================== LOAD DATA ====================
     function loadYear(year) {
-      // FIX: Hide any visible tooltip when switching years
-      tooltipPinned = false;
-      tooltip.style('opacity', 0);
-      
-      // Show loading
-      loading.style('display', 'block');
-      loading.select('.loading-text').text('Loading network data...');
-      loading.select('.loading-spinner').style('display', 'block');
+      hideTooltip();
+      hideNodeDetails();
+      highlightedSector = null;
+      searchInput.value = '';
+      searchTerm = '';
+
+      loading.style.display = 'flex';
       yearBadge.textContent = year;
 
-      // Disable controls
       document.getElementById('resetBtn').disabled = true;
       document.getElementById('centerBtn').disabled = true;
+      document.getElementById('playBtn').disabled = true;
 
-      // Clear previous network
       if (simulation) {
         simulation.stop();
         simulation = null;
       }
       svg.selectAll('*').remove();
 
-      // Load data
       const dataUrl = `/data/board_network_${year}_no_isolates.json`;
 
       d3.json(dataUrl)
-        .then((data) => {
-          // Validate data structure
+        .then(data => {
           if (!data || !Array.isArray(data.nodes) || !Array.isArray(data.links)) {
             throw new Error('Invalid data format');
           }
-          
-          // Compute centralities before rendering
-          computeCentralities(data);
 
-          loading.style('display', 'none');
-          
-          // Update stats with safety checks
+          computeCentralities(data);
+          currentData = data;
+
+          loading.style.display = 'none';
+
+          // Stats
           const nodeCount = data.nodes.length;
           const linkCount = data.links.length;
-          const avgDegree = nodeCount > 0 ? (linkCount * 2 / nodeCount).toFixed(1) : '0.0';
-          const maxPossibleLinks = (nodeCount * (nodeCount - 1)) / 2;
-          const density = maxPossibleLinks > 0 ? ((linkCount / maxPossibleLinks) * 100).toFixed(2) : '0.00';
+          const avgDeg = nodeCount > 0 ? (linkCount * 2 / nodeCount).toFixed(1) : '0.0';
+          const maxLinks = (nodeCount * (nodeCount - 1)) / 2;
+          const dens = maxLinks > 0 ? ((linkCount / maxLinks) * 100).toFixed(2) : '0.00';
 
           document.getElementById('totalNodes').textContent = nodeCount;
           document.getElementById('totalLinks').textContent = linkCount;
-          document.getElementById('avgDegree').textContent = avgDegree;
-          document.getElementById('density').textContent = density + '%';
+          document.getElementById('avgDegree').textContent = avgDeg;
+          document.getElementById('density').textContent = dens + '%';
 
-          // Enable controls
           document.getElementById('resetBtn').disabled = false;
           document.getElementById('centerBtn').disabled = false;
+          document.getElementById('playBtn').disabled = false;
 
+          buildLegend(data);
           renderNetwork(data);
         })
-        .catch((err) => {
-          loading.select('.loading-text').text(`Failed to load data for ${year}. File may not exist.`);
-          loading.select('.loading-spinner').style('display', 'none');
-          // FIX: Enable controls so user can try another year
-          document.getElementById('resetBtn').disabled = false;
-          document.getElementById('centerBtn').disabled = false;
-          console.error('Data load error:', err);
+        .catch(err => {
+          loading.querySelector('.loading-text').textContent = `Failed to load data for ${year}`;
+          loading.querySelector('.loading-spinner').style.display = 'none';
+          loading.querySelector('.loading-progress').style.display = 'none';
+          console.error(err);
         });
     }
 
+    // ==================== RENDER NETWORK ====================
     function renderNetwork(data) {
-      // FIX: Clean up tooltip state
-      tooltipPinned = false;
-      tooltip.style('opacity', 0);
-      
       const container = document.querySelector('.main-content');
       const width = container.clientWidth;
-      const height = Math.max(container.clientHeight - 60, 400); // FIX: Ensure minimum height
+      const height = Math.max(container.clientHeight - 60, 500);
 
       transform = d3.zoomIdentity;
-      // FIX: Use string format for viewBox
-      svg.attr('viewBox', `0 0 ${width} ${height}`);
-      svg.attr('width', '100%');
-      svg.attr('height', '100%');
+      svg.attr('viewBox', `0 0 ${width} ${height}`).attr('width', '100%').attr('height', '100%');
 
-      // Helper to choose node size: use degree centrality if available
+      // Node size by degree
       function getNodeSize(d) {
-        if (d.centrality && d.centrality.degree != null && d.centrality.degree > 0) {
-          return d.centrality.degree;
-        }
-        return d.size != null ? d.size : 10;
+        return d.centrality?.degree ?? d.size ?? 5;
       }
 
-      const baseSizes = data.nodes.map(getNodeSize);
-      const minSize = d3.min(baseSizes) || 1;
-      const maxSize = d3.max(baseSizes) || 20;
-      
+      const sizes = data.nodes.map(getNodeSize);
       const rScale = d3.scaleSqrt()
-        .domain([minSize, Math.max(maxSize, minSize + 1)]) // FIX: Ensure valid domain
-        .range([5, 20]);
+        .domain([d3.min(sizes) || 1, d3.max(sizes) || 20])
+        .range([4, 24]);
 
-      // Root group
+      // Definitions for gradients
+      const defs = svg.append('defs');
+
+      // Glow filter
+      const filter = defs.append('filter').attr('id', 'glow');
+      filter.append('feGaussianBlur').attr('stdDeviation', '3').attr('result', 'coloredBlur');
+      const merge = filter.append('feMerge');
+      merge.append('feMergeNode').attr('in', 'coloredBlur');
+      merge.append('feMergeNode').attr('in', 'SourceGraphic');
+
       g = svg.append('g');
 
-      // Links (more visible styling)
+      // Links
       const link = g.append('g')
         .attr('class', 'links')
         .selectAll('line')
         .data(data.links)
         .join('line')
         .attr('stroke', '#64748b')
-        .attr('stroke-opacity', 0.9)
-        .attr('stroke-width', (d) => 1.4 + Math.sqrt(d.weight || 1))
+        .attr('stroke-opacity', 0.6)
+        .attr('stroke-width', d => 1 + Math.sqrt(d.weight || 1) * 0.8)
         .attr('stroke-linecap', 'round');
 
-      // Drag behavior (mouse only; disabled on touch for better scrolling)
-      const dragBehavior = d3.drag()
-        .filter((event) => {
-          const pointerType = event.pointerType;
-          if (pointerType === 'touch') return false;
-          return !event.button || event.button === 0;
-        })
-        .on('start', dragstarted)
-        .on('drag', dragged)
-        .on('end', dragended);
-
-      // Nodes
+      // Nodes group
       const node = g.append('g')
         .attr('class', 'nodes')
         .selectAll('g')
         .data(data.nodes)
         .join('g')
-        .call(dragBehavior);
+        .call(d3.drag()
+          .filter(event => event.pointerType !== 'touch')
+          .on('start', dragstarted)
+          .on('drag', dragged)
+          .on('end', dragended));
 
+      // Node circles
       node.append('circle')
-        .attr('r', (d) => rScale(getNodeSize(d)))
-        .attr('fill', (d) => d.color || '#0ea5e9')
-        .attr('stroke', '#e5e7eb')
-        .attr('stroke-width', 1.8)
+        .attr('r', d => rScale(getNodeSize(d)))
+        .attr('fill', d => d.color || '#6366f1')
+        .attr('stroke', 'rgba(255,255,255,0.2)')
+        .attr('stroke-width', 2)
+        .attr('filter', 'url(#glow)')
         .style('cursor', 'pointer');
 
-      // Labels (fade in when zoomed)
+      // Labels (show on zoom)
       const labels = node.append('text')
-        .text((d) => d.label || d.id)
-        .attr('x', (d) => rScale(getNodeSize(d)) + 6)
+        .text(d => d.label || d.id)
+        .attr('x', d => rScale(getNodeSize(d)) + 8)
         .attr('y', 4)
         .attr('font-size', 11)
-        .attr('fill', '#0f172a')
+        .attr('fill', 'rgba(255,255,255,0.8)')
         .attr('opacity', 0)
         .style('pointer-events', 'none');
 
-      // Zoom behavior: disabled for touch to keep page scroll natural
+      // Zoom
       zoom = d3.zoom()
         .scaleExtent([0.1, 10])
-        .filter((event) => {
-          const type = event.type;
-          const pointerType = event.pointerType;
-
-          if (pointerType === 'touch') return false;
-          if (type === 'wheel') return true;
-          if (type === 'mousedown' && event.button === 0) return true;
-          if (type === 'dblclick') return true;
-
-          return false;
+        .filter(event => {
+          if (event.pointerType === 'touch') return false;
+          return event.type === 'wheel' || (event.type === 'mousedown' && event.button === 0) || event.type === 'dblclick';
         })
-        .on('zoom', (event) => {
+        .on('zoom', event => {
           transform = event.transform;
           g.attr('transform', transform);
-          const k = event.transform.k;
-          labels.attr('opacity', k > 2 ? 1 : 0);
+          labels.attr('opacity', transform.k > 1.5 ? 1 : 0);
+          updateMiniMap();
         });
 
       svg.call(zoom);
 
-      // Node tooltips: desktop (hover) + mobile/desktop (click)
+      // Interactions
       node
-        .on('mouseenter', function(event, d) {
+        .on('mouseenter', (event, d) => {
           if (event.pointerType === 'touch') return;
-          if (tooltipPinned) return; // Don't override pinned tooltip on hover
           showNodeTooltip(event, d);
         })
-        .on('mousemove', function(event, d) {
-          if (tooltipPinned) return;
-          if (event.pointerType === 'touch') return;
+        .on('mousemove', (event) => {
           positionTooltip(event);
         })
-        .on('mouseleave', function() {
-          if (!tooltipPinned) {
-            tooltip.style('opacity', 0);
-          }
-        })
-        .on('click', function(event, d) {
+        .on('mouseleave', hideTooltip)
+        .on('click', (event, d) => {
           event.stopPropagation();
-          tooltipPinned = true;
-          showNodeTooltip(event, d);
+          hideTooltip();
+          showNodeDetails(d);
         });
 
-      // Link tooltips: desktop hover + mobile tap
       link
-        .on('mouseenter', function(event, d) {
+        .on('mouseenter', (event, d) => {
           if (event.pointerType === 'touch') return;
-          if (tooltipPinned) return;
-          showLinkTooltip(event, d, data.nodes);
+          showLinkTooltip(event, d);
         })
-        .on('mousemove', function(event, d) {
-          if (tooltipPinned) return;
-          if (event.pointerType === 'touch') return;
-          positionTooltip(event);
-        })
-        .on('mouseleave', function() {
-          if (!tooltipPinned) {
-            tooltip.style('opacity', 0);
-          }
-        })
-        .on('click', function(event, d) {
-          event.stopPropagation();
-          tooltipPinned = true;
-          showLinkTooltip(event, d, data.nodes);
-        });
+        .on('mousemove', positionTooltip)
+        .on('mouseleave', hideTooltip);
 
-      // Force simulation
+      svg.on('click', () => {
+        hideNodeDetails();
+      });
+
+      // Simulation
       simulation = d3.forceSimulation(data.nodes)
-        .force(
-          'link',
-          d3.forceLink(data.links)
-            .id((d) => d.id)
-            .distance((d) => 40 + (Math.sqrt(d.weight || 1) * 6))
-            .strength(0.8)
-        )
-        .force('charge', d3.forceManyBody().strength(-60))
+        .force('link', d3.forceLink(data.links).id(d => d.id).distance(60).strength(0.5))
+        .force('charge', d3.forceManyBody().strength(-100))
         .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('x', d3.forceX(width / 2).strength(0.08))
-        .force('y', d3.forceY(height / 2).strength(0.08))
-        .force('collision', d3.forceCollide().radius((d) => rScale(getNodeSize(d)) + 4).iterations(2));
+        .force('x', d3.forceX(width / 2).strength(0.05))
+        .force('y', d3.forceY(height / 2).strength(0.05))
+        .force('collision', d3.forceCollide().radius(d => rScale(getNodeSize(d)) + 4));
 
       simulation.on('tick', () => {
         link
-          .attr('x1', (d) => d.source.x)
-          .attr('y1', (d) => d.source.y)
-          .attr('x2', (d) => d.target.x)
-          .attr('y2', (d) => d.target.y);
+          .attr('x1', d => d.source.x)
+          .attr('y1', d => d.source.y)
+          .attr('x2', d => d.target.x)
+          .attr('y2', d => d.target.y);
 
-        node.attr('transform', (d) => `translate(${d.x},${d.y})`);
+        node.attr('transform', d => `translate(${d.x},${d.y})`);
       });
 
-      // Controls
-      document.getElementById('resetBtn').onclick = () => {
-        tooltipPinned = false;
-        tooltip.style('opacity', 0);
-        svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
-      };
-
-      document.getElementById('centerBtn').onclick = () => {
-        tooltipPinned = false;
-        tooltip.style('opacity', 0);
-        simulation.alpha(1).restart();
-      };
+      simulation.on('end', () => {
+        updateMiniMap();
+      });
 
       // Drag functions
       function dragstarted(event) {
@@ -1055,26 +1953,139 @@
         event.subject.fy = null;
       }
 
-      // Responsive – avoid stacking listeners across year changes
+      // Resize handler
       if (resizeHandler) {
         window.removeEventListener('resize', resizeHandler);
       }
 
-      let resizeTimeout;
-      resizeHandler = () => {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(() => {
-          const w = container.clientWidth;
-          const h = Math.max(container.clientHeight - 60, 400);
-          svg.attr('viewBox', `0 0 ${w} ${h}`);
-          simulation.force('center', d3.forceCenter(w / 2, h / 2));
-          simulation.force('x', d3.forceX(w / 2).strength(0.08));
-          simulation.force('y', d3.forceY(h / 2).strength(0.08));
-          simulation.alpha(0.3).restart();
-        }, 250);
-      };
+      resizeHandler = debounce(() => {
+        const w = container.clientWidth;
+        const h = Math.max(container.clientHeight - 60, 500);
+        svg.attr('viewBox', `0 0 ${w} ${h}`);
+        simulation.force('center', d3.forceCenter(w / 2, h / 2));
+        simulation.force('x', d3.forceX(w / 2).strength(0.05));
+        simulation.force('y', d3.forceY(h / 2).strength(0.05));
+        simulation.alpha(0.3).restart();
+      }, 250);
 
       window.addEventListener('resize', resizeHandler);
+
+      // Initialize mini map
+      initMiniMap(width, height);
+    }
+
+    // ==================== MINI MAP ====================
+    function initMiniMap(width, height) {
+      const mmWidth = 150;
+      const mmHeight = 100;
+      const scale = Math.min(mmWidth / width, mmHeight / height) * 0.9;
+
+      miniMapSvg.attr('viewBox', `0 0 ${mmWidth} ${mmHeight}`).attr('width', mmWidth).attr('height', mmHeight);
+      miniMapSvg.selectAll('*').remove();
+
+      miniMapG = miniMapSvg.append('g')
+        .attr('transform', `translate(${mmWidth / 2}, ${mmHeight / 2}) scale(${scale}) translate(${-width / 2}, ${-height / 2})`);
+
+      // Draw simplified nodes
+      if (currentData) {
+        miniMapG.selectAll('circle')
+          .data(currentData.nodes)
+          .join('circle')
+          .attr('cx', d => d.x || 0)
+          .attr('cy', d => d.y || 0)
+          .attr('r', 2)
+          .attr('fill', d => d.color || '#6366f1')
+          .attr('opacity', 0.6);
+      }
+
+      // Viewport rectangle
+      miniMapSvg.append('rect')
+        .attr('class', 'mini-map-viewport')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', mmWidth)
+        .attr('height', mmHeight);
+    }
+
+    function updateMiniMap() {
+      if (!miniMapG || !currentData) return;
+
+      miniMapG.selectAll('circle')
+        .attr('cx', d => d.x || 0)
+        .attr('cy', d => d.y || 0);
+
+      // Update viewport indicator based on current transform
+      const container = document.querySelector('.main-content');
+      const width = container.clientWidth;
+      const height = Math.max(container.clientHeight - 60, 500);
+      const mmWidth = 150;
+      const mmHeight = 100;
+      const scale = Math.min(mmWidth / width, mmHeight / height) * 0.9;
+
+      const vpWidth = (width / transform.k) * scale;
+      const vpHeight = (height / transform.k) * scale;
+      const vpX = (-transform.x / transform.k) * scale + (mmWidth / 2) - (width / 2) * scale;
+      const vpY = (-transform.y / transform.k) * scale + (mmHeight / 2) - (height / 2) * scale;
+
+      miniMapSvg.select('.mini-map-viewport')
+        .attr('x', Math.max(0, vpX))
+        .attr('y', Math.max(0, vpY))
+        .attr('width', Math.min(vpWidth, mmWidth))
+        .attr('height', Math.min(vpHeight, mmHeight));
+    }
+
+    // ==================== FIT TO VIEW ====================
+    function fitToView() {
+      if (!currentData || !currentData.nodes.length) return;
+
+      const container = document.querySelector('.main-content');
+      const width = container.clientWidth;
+      const height = Math.max(container.clientHeight - 60, 500);
+
+      // Calculate bounds
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      currentData.nodes.forEach(d => {
+        if (d.x < minX) minX = d.x;
+        if (d.x > maxX) maxX = d.x;
+        if (d.y < minY) minY = d.y;
+        if (d.y > maxY) maxY = d.y;
+      });
+
+      const padding = 50;
+      const graphWidth = maxX - minX + padding * 2;
+      const graphHeight = maxY - minY + padding * 2;
+
+      const scale = Math.min(width / graphWidth, height / graphHeight, 2) * 0.9;
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+
+      const translateX = width / 2 - centerX * scale;
+      const translateY = height / 2 - centerY * scale;
+
+      svg.transition()
+        .duration(750)
+        .call(zoom.transform, d3.zoomIdentity.translate(translateX, translateY).scale(scale));
+    }
+
+    // ==================== EXPORT SVG ====================
+    function exportSVG() {
+      const svgElement = document.getElementById('network');
+      const serializer = new XMLSerializer();
+      let svgString = serializer.serializeToString(svgElement);
+
+      // Add XML declaration and styling
+      svgString = '<?xml version="1.0" encoding="UTF-8"?>\n' + svgString;
+
+      const blob = new Blob([svgString], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `board_network_${currentYear}.svg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     }
   </script>
 </body>
