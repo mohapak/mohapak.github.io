@@ -427,7 +427,7 @@
       document.getElementById('yearBadge').innerText = year;
 
       try {
-        const rawData = await d3.json(`/data/board_network_${year}_no_isolates.json`);
+        const rawData = await d3.json(`data/board_network_${year}_no_isolates.json`);
         
         // --- STEP 1: CALCULATE CENTRALITIES ---
         currentData = calculateCentralities(rawData);
