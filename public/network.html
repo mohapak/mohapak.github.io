@@ -73,6 +73,7 @@
       display: flex;
       flex-direction: column;
       backdrop-filter: blur(10px);
+      min-height: 500px; /* FIX: Ensure minimum height */
     }
 
     .controls {
@@ -164,10 +165,11 @@
     #network {
       flex: 1;
       width: 100%;
+      min-height: 400px; /* FIX: Ensure SVG has height */
+      height: 100%;
       cursor: grab;
       background: radial-gradient(circle at center, #ffffff 0, #eff6ff 50%, #e5e7eb 100%);
-      touch-action: pan-y; /* allow vertical scrolling on touch devices */
-      min-height: 320px;
+      touch-action: pan-y;
     }
 
     #network:active {
@@ -228,7 +230,6 @@
       color: #e5e7eb;
     }
 
-    /* Tooltip: redesigned for clarity & readability */
     .tooltip {
       position: absolute;
       pointer-events: none;
@@ -295,6 +296,7 @@
       left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
+      z-index: 50; /* FIX: Ensure loading is above SVG */
     }
 
     .loading-spinner {
@@ -350,6 +352,10 @@
       .header {
         padding: 0.9rem 1.4rem;
       }
+      
+      .main-content {
+        min-height: 400px;
+      }
     }
 
     @media (max-width: 640px) {
@@ -372,6 +378,14 @@
 
       .header p {
         font-size: 0.8rem;
+      }
+      
+      .main-content {
+        min-height: 350px;
+      }
+      
+      #network {
+        min-height: 300px;
       }
     }
   </style>
@@ -467,7 +481,7 @@
   <script>
     // State
     let currentYear = '2024';
-    let simulation;
+    let simulation = null;
     let transform = d3.zoomIdentity;
     let svg, g, zoom;
     let resizeHandler = null;
@@ -660,6 +674,14 @@
       if (y + tooltipHeight + padding > scrollY + viewportHeight) {
         y = scrollY + viewportHeight - tooltipHeight - padding;
       }
+      
+      // FIX: Ensure tooltip doesn't go off-screen to the left or top
+      if (x < scrollX + padding) {
+        x = scrollX + padding;
+      }
+      if (y < scrollY + padding) {
+        y = scrollY + padding;
+      }
 
       tooltip.style('left', `${x}px`).style('top', `${y}px`);
     }
@@ -736,10 +758,26 @@
     });
 
     // Hide pinned tooltip on background click (desktop & mobile)
-    svg.on('click', () => {
-      if (tooltipPinned) {
-        tooltipPinned = false;
-        tooltip.style('opacity', 0);
+    svg.on('click', (event) => {
+      // Only hide if clicking on SVG background, not on nodes/links
+      if (event.target === svg.node()) {
+        if (tooltipPinned) {
+          tooltipPinned = false;
+          tooltip.style('opacity', 0);
+        }
+      }
+    });
+    
+    // Also hide tooltip when clicking anywhere on document
+    document.addEventListener('click', (event) => {
+      if (tooltipPinned && !event.target.closest('.nodes') && !event.target.closest('.links')) {
+        // Small delay to allow node click to register first
+        setTimeout(() => {
+          if (tooltipPinned && !event.defaultPrevented) {
+            tooltipPinned = false;
+            tooltip.style('opacity', 0);
+          }
+        }, 10);
       }
     });
 
@@ -747,6 +785,10 @@
     loadYear(currentYear);
 
     function loadYear(year) {
+      // FIX: Hide any visible tooltip when switching years
+      tooltipPinned = false;
+      tooltip.style('opacity', 0);
+      
       // Show loading
       loading.style('display', 'block');
       loading.select('.loading-text').text('Loading network data...');
@@ -760,6 +802,7 @@
       // Clear previous network
       if (simulation) {
         simulation.stop();
+        simulation = null;
       }
       svg.selectAll('*').remove();
 
@@ -768,19 +811,25 @@
 
       d3.json(dataUrl)
         .then((data) => {
+          // Validate data structure
+          if (!data || !Array.isArray(data.nodes) || !Array.isArray(data.links)) {
+            throw new Error('Invalid data format');
+          }
+          
           // Compute centralities before rendering
           computeCentralities(data);
 
           loading.style('display', 'none');
-          // Update stats
-          const nodes = data.nodes.length;
-          const links = data.links.length;
-          const avgDegree = (links * 2 / nodes).toFixed(1);
-          const maxPossibleLinks = (nodes * (nodes - 1)) / 2;
-          const density = ((links / maxPossibleLinks) * 100).toFixed(2);
+          
+          // Update stats with safety checks
+          const nodeCount = data.nodes.length;
+          const linkCount = data.links.length;
+          const avgDegree = nodeCount > 0 ? (linkCount * 2 / nodeCount).toFixed(1) : '0.0';
+          const maxPossibleLinks = (nodeCount * (nodeCount - 1)) / 2;
+          const density = maxPossibleLinks > 0 ? ((linkCount / maxPossibleLinks) * 100).toFixed(2) : '0.00';
 
-          document.getElementById('totalNodes').textContent = nodes;
-          document.getElementById('totalLinks').textContent = links;
+          document.getElementById('totalNodes').textContent = nodeCount;
+          document.getElementById('totalLinks').textContent = linkCount;
           document.getElementById('avgDegree').textContent = avgDegree;
           document.getElementById('density').textContent = density + '%';
 
@@ -793,17 +842,27 @@
         .catch((err) => {
           loading.select('.loading-text').text(`Failed to load data for ${year}. File may not exist.`);
           loading.select('.loading-spinner').style('display', 'none');
-          console.error(err);
+          // FIX: Enable controls so user can try another year
+          document.getElementById('resetBtn').disabled = false;
+          document.getElementById('centerBtn').disabled = false;
+          console.error('Data load error:', err);
         });
     }
 
     function renderNetwork(data) {
+      // FIX: Clean up tooltip state
+      tooltipPinned = false;
+      tooltip.style('opacity', 0);
+      
       const container = document.querySelector('.main-content');
       const width = container.clientWidth;
-      const height = container.clientHeight - 60;
+      const height = Math.max(container.clientHeight - 60, 400); // FIX: Ensure minimum height
 
       transform = d3.zoomIdentity;
-      svg.attr('viewBox', [0, 0, width, height]);
+      // FIX: Use string format for viewBox
+      svg.attr('viewBox', `0 0 ${width} ${height}`);
+      svg.attr('width', '100%');
+      svg.attr('height', '100%');
 
       // Helper to choose node size: use degree centrality if available
       function getNodeSize(d) {
@@ -814,8 +873,11 @@
       }
 
       const baseSizes = data.nodes.map(getNodeSize);
+      const minSize = d3.min(baseSizes) || 1;
+      const maxSize = d3.max(baseSizes) || 20;
+      
       const rScale = d3.scaleSqrt()
-        .domain([d3.min(baseSizes) || 1, d3.max(baseSizes) || 20])
+        .domain([minSize, Math.max(maxSize, minSize + 1)]) // FIX: Ensure valid domain
         .range([5, 20]);
 
       // Root group
@@ -836,8 +898,8 @@
       const dragBehavior = d3.drag()
         .filter((event) => {
           const pointerType = event.pointerType;
-          if (pointerType === 'touch') return false; // allow native scrolling
-          return !event.button || event.button === 0; // left mouse button
+          if (pointerType === 'touch') return false;
+          return !event.button || event.button === 0;
         })
         .on('start', dragstarted)
         .on('drag', dragged)
@@ -875,9 +937,7 @@
           const type = event.type;
           const pointerType = event.pointerType;
 
-          // Disable zoom on touch devices: keep vertical scrolling intuitive
           if (pointerType === 'touch') return false;
-
           if (type === 'wheel') return true;
           if (type === 'mousedown' && event.button === 0) return true;
           if (type === 'dblclick') return true;
@@ -895,23 +955,22 @@
 
       // Node tooltips: desktop (hover) + mobile/desktop (click)
       node
-        .on('mouseenter', (event, d) => {
-          if (event.pointerType === 'touch') return; // avoid conflict with scrolling
-          tooltipPinned = false;
+        .on('mouseenter', function(event, d) {
+          if (event.pointerType === 'touch') return;
+          if (tooltipPinned) return; // Don't override pinned tooltip on hover
           showNodeTooltip(event, d);
         })
-        .on('mousemove', (event, d) => {
+        .on('mousemove', function(event, d) {
           if (tooltipPinned) return;
           if (event.pointerType === 'touch') return;
           positionTooltip(event);
         })
-        .on('mouseleave', () => {
+        .on('mouseleave', function() {
           if (!tooltipPinned) {
             tooltip.style('opacity', 0);
           }
         })
-        .on('click', (event, d) => {
-          // Tap/click to pin tooltip (works well on mobile)
+        .on('click', function(event, d) {
           event.stopPropagation();
           tooltipPinned = true;
           showNodeTooltip(event, d);
@@ -919,28 +978,28 @@
 
       // Link tooltips: desktop hover + mobile tap
       link
-        .on('mouseenter', (event, d) => {
+        .on('mouseenter', function(event, d) {
           if (event.pointerType === 'touch') return;
-          tooltipPinned = false;
+          if (tooltipPinned) return;
           showLinkTooltip(event, d, data.nodes);
         })
-        .on('mousemove', (event, d) => {
+        .on('mousemove', function(event, d) {
           if (tooltipPinned) return;
           if (event.pointerType === 'touch') return;
           positionTooltip(event);
         })
-        .on('mouseleave', () => {
+        .on('mouseleave', function() {
           if (!tooltipPinned) {
             tooltip.style('opacity', 0);
           }
         })
-        .on('click', (event, d) => {
+        .on('click', function(event, d) {
           event.stopPropagation();
           tooltipPinned = true;
           showLinkTooltip(event, d, data.nodes);
         });
 
-      // *** TIGHTER, MORE COMPACT LAYOUT FOR SUBNETWORKS ***
+      // Force simulation
       simulation = d3.forceSimulation(data.nodes)
         .force(
           'link',
@@ -1006,8 +1065,8 @@
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
           const w = container.clientWidth;
-          const h = container.clientHeight - 60;
-          svg.attr('viewBox', [0, 0, w, h]);
+          const h = Math.max(container.clientHeight - 60, 400);
+          svg.attr('viewBox', `0 0 ${w} ${h}`);
           simulation.force('center', d3.forceCenter(w / 2, h / 2));
           simulation.force('x', d3.forceX(w / 2).strength(0.08));
           simulation.force('y', d3.forceY(h / 2).strength(0.08));
