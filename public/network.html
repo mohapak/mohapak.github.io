@@ -1,24 +1,3 @@
-That's a great catch\! The previous JSON data format didn't include the calculated centrality measures, which is why the tooltip showed **N/A**.
-
-To resolve this, I'll update the script to **calculate the four key centrality measures** (Degree, Closeness, Betweenness, and Eigenvector) directly within the D3.js script after the data is loaded. This avoids requiring pre-calculated values in your JSON files, making the visualization more dynamic and robust.
-
-I'll use the **JavaScript-based Graphology/community libraries** for accurate graph analysis, as these are the standard tools for network calculation in a browser environment.
-
-Here is the final, fully calculated, and responsive HTML code.
-
-## 💻 Final HTML Code with Centrality Calculation
-
-This single-file HTML includes the necessary logic to load a graph analysis library (`graphology`) and calculate the four specified centrality measures on the fly, ensuring the tooltip data is complete.
-
-### Key Changes
-
-1.  **Library Inclusion:** Added the `graphology` and `graphology-metrics` libraries via CDN.
-2.  **`calculateCentralities` Function:** A new function is introduced to perform the graph analysis (Degree, Closeness, Betweenness, Eigenvector).
-3.  **Tooltip Enhancement:** The tooltip now displays all four calculated measures.
-
-<!-- end list -->
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
