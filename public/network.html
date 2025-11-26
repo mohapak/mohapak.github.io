@@ -2,646 +2,839 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Board Network Analysis - Final</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Board Network Visualization - Thesis Defense</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
-  <script src="https://unpkg.com/graphology@0.25.1"></script>
-  <script src="https://unpkg.com/graphology-metrics@2.0.0"></script>
   <style>
-    /* --- 1. CORE RESET & VARIABLES --- */
-    :root {
-      --bg-dark: #0f172a;
-      --bg-card: rgba(30, 41, 59, 0.7);
-      --text-primary: #f1f5f9;
-      --text-secondary: #94a3b8;
-      --accent: #3b82f6;
-      --accent-glow: rgba(59, 130, 246, 0.5);
-      --border: rgba(148, 163, 184, 0.15);
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: radial-gradient(circle at top, #1e293b 0, #020617 100%);
-      color: var(--text-primary);
-      height: 100vh;
-      width: 100vw;
-      overflow: hidden; /* App-like feel */
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+      background: radial-gradient(circle at top, #1d2140 0, #020617 40%, #020617 100%);
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow-x: hidden;
+      overflow-y: auto;
+      color: #0f172a;
     }
 
-    /* --- 2. HEADER --- */
     .header {
-      background: rgba(15, 23, 42, 0.9);
-      backdrop-filter: blur(12px);
-      padding: 0.75rem 1.5rem;
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-      z-index: 50;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(14px);
+      padding: 1.1rem 2.5rem;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.6);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
-    .header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: 0.02em; color: #fff; }
-    .header p { font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px; }
 
-    /* --- 3. MAIN LAYOUT (DESKTOP) --- */
+    .header h1 {
+      font-size: 1.4rem;
+      color: #e5e7eb;
+      margin: 0;
+      font-weight: 650;
+      letter-spacing: 0.03em;
+    }
+
+    .header p {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      margin-top: 0.25rem;
+    }
+
     .container {
       flex: 1;
       display: flex;
-      padding: 1rem;
-      gap: 1rem;
-      overflow: hidden;
-      position: relative;
+      padding: 1.5rem 2rem 2rem;
+      gap: 1.5rem;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
     }
 
-    /* VISUALIZATION PANEL */
-    .viz-panel {
+    .main-content {
       flex: 1;
-      background: radial-gradient(circle at top left, #f8fafc 0, #cbd5e1 100%); /* Light bg for contrast */
-      border-radius: 16px;
+      background: radial-gradient(circle at top left, #f9fafb 0, #e5f0ff 45%, #eef2ff 100%);
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.55);
+      overflow: hidden;
       position: relative;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
     }
 
-    /* CONTROLS BAR */
-    .controls-bar {
-      padding: 0.75rem;
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid rgba(0,0,0,0.05);
+    .controls {
+      padding: 0.9rem 1.15rem;
+      background: rgba(248, 250, 252, 0.92);
+      border-bottom: 1px solid rgba(203, 213, 225, 0.8);
       display: flex;
       gap: 0.75rem;
       align-items: center;
       flex-wrap: wrap;
-      z-index: 10;
     }
 
-    .control-item {
-      display: flex;
+    .year-selector {
+      display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      background: #fff;
-      padding: 0.35rem 0.75rem;
-      border-radius: 8px;
-      border: 1px solid #cbd5e1;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      gap: 0.6rem;
+      padding: 0.45rem 0.9rem;
+      background: white;
+      border: 1px solid rgba(14, 165, 233, 0.4);
+      border-radius: 999px;
+      font-weight: 500;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
     }
-    .control-item label { font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
-    
-    select, input {
-      border: none; background: transparent; outline: none;
-      font-size: 0.85rem; font-weight: 600; color: #334155; width: auto;
-    }
-    input::placeholder { color: #94a3b8; font-weight: 400; }
 
-    /* ACTION BUTTONS */
-    .btn-group { display: flex; gap: 0.5rem; margin-left: auto; }
+    .year-selector label {
+      font-size: 0.8rem;
+      color: #0f172a;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .year-selector select {
+      padding: 0.25rem 0.7rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 500;
+      outline: none;
+      transition: all 0.18s ease-out;
+    }
+
+    .year-selector select:hover {
+      border-color: #0ea5e9;
+      background: #eff6ff;
+    }
+
+    .year-selector select:focus {
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+    }
+
     button {
-      padding: 0.4rem 0.8rem;
-      border: none; border-radius: 6px;
-      background: var(--bg-dark); color: #fff;
-      font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
-      cursor: pointer; transition: all 0.2s;
+      padding: 0.45rem 1rem;
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      color: white;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      transition: all 0.18s ease-out;
+      box-shadow: 0 12px 28px rgba(37, 99, 235, 0.35);
     }
-    button.primary { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-    button:active { transform: scale(0.96); }
 
-    /* SVG AREA */
-    #network { width: 100%; flex: 1; cursor: grab; touch-action: none; }
-    #network:active { cursor: grabbing; }
+    button:hover {
+      background: linear-gradient(135deg, #0284c7, #1d4ed8);
+      transform: translateY(-1px);
+      box-shadow: 0 16px 36px rgba(37, 99, 235, 0.45);
+    }
 
-    /* SIDEBAR (STATS) */
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+    }
+
+    button:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    #network {
+      flex: 1;
+      width: 100%;
+      cursor: grab;
+      background: radial-gradient(circle at center, #ffffff 0, #eff6ff 50%, #e5e7eb 100%);
+      touch-action: pan-y; /* allow vertical scrolling on touch devices */
+      min-height: 320px;
+    }
+
+    #network:active {
+      cursor: grabbing;
+    }
+
     .sidebar {
-      width: 280px;
-      background: rgba(15, 23, 42, 0.8);
-      backdrop-filter: blur(20px);
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
+      width: 300px;
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.85);
+      padding: 1.4rem 1.3rem 1.5rem;
       overflow-y: auto;
-      flex-shrink: 0;
+      color: #e5e7eb;
+      max-height: none;
     }
 
-    /* STAT CARDS */
-    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .sidebar h3 {
+      font-size: 1.05rem;
+      color: #f9fafb;
+      margin-bottom: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
     .stat-card {
-      background: rgba(255, 255, 255, 0.05);
-      padding: 0.75rem; border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.05); text-align: center;
-    }
-    .stat-value { font-size: 1.25rem; font-weight: 700; color: #60a5fa; }
-    .stat-label { font-size: 0.6rem; color: #94a3b8; text-transform: uppercase; margin-top: 0.25rem; }
-
-    h3 { font-size: 0.8rem; color: #e2e8f0; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
-    
-    .legend-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.4rem; }
-    .dot { width: 10px; height: 10px; border-radius: 50%; }
-
-    /* LOADING & OVERLAYS */
-    .loading-overlay {
-      position: absolute; inset: 0; background: rgba(248, 250, 252, 0.8);
-      backdrop-filter: blur(4px); z-index: 20;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      transition: opacity 0.3s;
-    }
-    .spinner {
-      width: 30px; height: 30px; border: 3px solid #cbd5e1;
-      border-top-color: #3b82f6; border-radius: 50%;
-      animation: spin 1s linear infinite; margin-bottom: 10px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    
-    .year-watermark {
-      position: absolute; bottom: 1rem; right: 1rem;
-      font-size: 5rem; font-weight: 900; color: rgba(0,0,0,0.04);
-      pointer-events: none; user-select: none; line-height: 1;
+      background: radial-gradient(circle at top, rgba(30, 64, 175, 0.9), rgba(15, 23, 42, 0.95));
+      padding: 0.9rem 0.95rem;
+      border-radius: 12px;
+      margin-bottom: 0.85rem;
+      border: 1px solid rgba(129, 140, 248, 0.45);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
     }
 
-    /* TOOLTIP */
+    .stat-label {
+      font-size: 0.7rem;
+      color: #cbd5f5;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.2rem;
+    }
+
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #bfdbfe;
+    }
+
+    .info-text {
+      font-size: 0.85rem;
+      color: #cbd5f5;
+      line-height: 1.6;
+    }
+
+    .info-text strong {
+      color: #e5e7eb;
+    }
+
+    /* Tooltip: redesigned for clarity & readability */
     .tooltip {
-      position: fixed; opacity: 0;
-      background: rgba(15, 23, 42, 0.95);
-      color: #fff; padding: 0.75rem 1rem;
-      border-radius: 8px; font-size: 0.85rem;
-      pointer-events: none; z-index: 1000;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-      border: 1px solid rgba(255,255,255,0.1);
-      transition: opacity 0.15s;
+      position: absolute;
+      pointer-events: none;
+      opacity: 0;
+      background: rgba(15, 23, 42, 0.97);
+      color: #f9fafb;
+      padding: 0.7rem 0.95rem;
+      border-radius: 0.9rem;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.7);
+      transition: opacity 0.15s ease-out;
       max-width: 280px;
+      z-index: 1000;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      backdrop-filter: blur(6px);
+      white-space: normal;
     }
 
-    /* --- 4. MOBILE RESPONSIVENESS --- */
-    @media (max-width: 768px) {
-      body { height: 100%; overflow-y: auto; } /* Allow vertical scroll on body for mobile */
-      
+    .tooltip-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 0.25rem;
+      color: #e5e7eb;
+    }
+
+    .tooltip-subtitle {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #9ca3af;
+      margin-bottom: 0.4rem;
+    }
+
+    .tooltip-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      font-size: 0.82rem;
+      color: #cbd5f5;
+    }
+
+    .tooltip-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(37, 99, 235, 0.26);
+      color: #bfdbfe;
+      margin-right: 0.3rem;
+    }
+
+    .tooltip-separator {
+      margin: 0.35rem 0;
+      border-top: 1px solid rgba(55, 65, 81, 0.9);
+    }
+
+    .loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e2e8f0;
+      border-top-color: #0ea5e9;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-text {
+      font-size: 1.05rem;
+      color: #64748b;
+    }
+
+    .year-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(15, 23, 42, 0.92);
+      color: #e5e7eb;
+      padding: 0.45rem 1.15rem;
+      border-radius: 999px;
+      font-weight: 650;
+      font-size: 1rem;
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.7);
+      z-index: 10;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+    }
+
+    @media (max-width: 1024px) {
       .container {
+        padding: 1rem;
         flex-direction: column;
-        padding: 0.5rem;
-        height: auto;
-        overflow: visible;
       }
 
-      .header { padding: 0.75rem 1rem; }
-      .header h1 { font-size: 0.95rem; }
-
-      /* Graph area gets specific height on mobile */
-      .viz-panel {
-        height: 60vh; /* Takes 60% of viewport */
-        min-height: 350px;
-        flex: none;
-      }
-
-      .controls-bar {
-        padding: 0.5rem;
-        gap: 0.5rem;
-      }
-
-      .control-item { padding: 0.25rem 0.5rem; flex: 1; justify-content: center; }
-      .control-item input { width: 100px; } /* Prevent overflow */
-      .btn-group { width: 100%; justify-content: space-between; margin-top: 0.25rem; }
-      .btn-group button { flex: 1; }
-
-      /* Sidebar moves to bottom */
       .sidebar {
         width: 100%;
-        height: auto;
-        overflow: visible;
-        background: transparent;
-        border: none;
-        backdrop-filter: none;
-        padding: 0.5rem 0;
+        margin-top: 1rem;
+        max-height: none;
       }
 
-      /* Dark cards for mobile stats */
-      .stat-grid { grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.5rem; }
-      .stat-card { background: rgba(30, 41, 59, 0.6); padding: 0.5rem; }
-      .stat-value { font-size: 1rem; }
-      .stat-label { font-size: 0.5rem; }
-
-      /* Legend Layout for Mobile */
-      .legend-container {
-        display: flex; flex-wrap: wrap; gap: 1rem;
-        background: rgba(30, 41, 59, 0.6); padding: 1rem; border-radius: 8px;
+      .header {
+        padding: 0.9rem 1.4rem;
       }
-      .legend-row { margin: 0; }
     }
-    
-    /* Highlight effect for search */
-    .node-highlight { stroke: #f59e0b !important; stroke-width: 4px !important; stroke-opacity: 1; filter: drop-shadow(0 0 4px #f59e0b); }
-    .dimmed { opacity: 0.1; transition: opacity 0.3s; }
+
+    @media (max-width: 640px) {
+      .controls {
+        padding: 0.8rem;
+      }
+
+      .year-selector {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .container {
+        padding: 0.75rem;
+      }
+
+      .header h1 {
+        font-size: 1.1rem;
+      }
+
+      .header p {
+        font-size: 0.8rem;
+      }
+    }
   </style>
 </head>
 <body>
-
-  <header class="header">
-    <div>
-      <h1>Board Network Analysis</h1>
-      <p>Tehran Stock Exchange | Thesis Defense</p>
-    </div>
-  </header>
+  <div class="header">
+    <h1>The Effect of Board of Directors Network on Firm Performance</h1>
+    <p>Tehran Stock Exchange - Interactive Network Visualization | Mohammad Mehdi Pakravan</p>
+  </div>
 
   <div class="container">
-    
-    <main class="viz-panel">
-      <div class="controls-bar">
-        <div class="control-item">
-          <label>📅</label>
+    <div class="main-content">
+      <div class="controls">
+        <div class="year-selector">
+          <label for="yearSelect">📅 Year</label>
           <select id="yearSelect">
-            <option value="2016">2016</option>
-            <option value="2017">2017</option>
-            <option value="2018">2018</option>
-            <option value="2019">2019</option>
-            <option value="2020">2020</option>
-            <option value="2021">2021</option>
-            <option value="2022">2022</option>
-            <option value="2023">2023</option>
-            <option value="2024" selected>2024</option>
+            <option value="2016">2016 (1395)</option>
+            <option value="2017">2017 (1396)</option>
+            <option value="2018">2018 (1397)</option>
+            <option value="2019">2019 (1398)</option>
+            <option value="2020">2020 (1399)</option>
+            <option value="2021">2021 (1400)</option>
+            <option value="2022">2022 (1401)</option>
+            <option value="2023">2023 (1402)</option>
+            <option value="2024" selected>2024 (1403)</option>
           </select>
         </div>
 
-        <div class="control-item" style="flex-grow: 2;">
-          <label>🔍</label>
-          <input type="text" id="searchInput" placeholder="Find firm..." list="firmList">
-          <datalist id="firmList"></datalist>
-        </div>
-
-        <div class="btn-group">
-          <button onclick="resetZoom()">Reset</button>
-          <button class="primary" onclick="reCenter()">Center</button>
-        </div>
+        <button id="resetBtn">Reset View</button>
+        <button id="centerBtn">Center Network</button>
       </div>
 
-      <div class="year-watermark" id="yearBadge">2024</div>
+      <div class="year-badge" id="yearBadge">2024</div>
       <svg id="network"></svg>
-
-      <div class="loading-overlay" id="loader">
-        <div class="spinner"></div>
-        <div style="font-size:0.8rem; color:#64748b; font-weight:600">Simulating & Calculating Centralities...</div>
+      <div class="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading network data...</div>
       </div>
-    </main>
+    </div>
 
-    <aside class="sidebar">
-      <div>
-        <h3>Network Health</h3>
-        <div class="stat-grid">
-          <div class="stat-card">
-            <div class="stat-value" id="totalNodes">0</div>
-            <div class="stat-label">Firms</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" id="totalLinks">0</div>
-            <div class="stat-label">Links</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" id="avgDegree">0</div>
-            <div class="stat-label">Avg Deg</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" id="density">0%</div>
-            <div class="stat-label">Density</div>
-          </div>
-        </div>
+    <div class="sidebar">
+      <h3>Network Statistics</h3>
+
+      <div class="stat-card">
+        <div class="stat-label">Total Firms</div>
+        <div class="stat-value" id="totalNodes">0</div>
       </div>
 
-      <div>
-        <h3>Legend</h3>
-        <div class="legend-container">
-          <div class="legend-row"><div class="dot" style="background:#ef4444"></div> High Centrality (Top 10%)</div>
-          <div class="legend-row"><div class="dot" style="background:#10b981"></div> Broker / Bridge</div>
-          <div class="legend-row"><div class="dot" style="background:#3b82f6"></div> Standard Firm</div>
-        </div>
+      <div class="stat-card">
+        <div class="stat-label">Board Interlocks</div>
+        <div class="stat-value" id="totalLinks">0</div>
       </div>
 
-      <div style="font-size: 0.75rem; color: #94a3b8; line-height: 1.5; padding-top: 0.5rem; border-top: 1px solid var(--border);">
-        <strong>Instructions:</strong> Drag nodes to rearrange. Scroll/Pinch to zoom. Tap a node to see connection details.
+      <div class="stat-card">
+        <div class="stat-label">Average Connections</div>
+        <div class="stat-value" id="avgDegree">0</div>
       </div>
-    </aside>
 
+      <div class="stat-card">
+        <div class="stat-label">Network Density</div>
+        <div class="stat-value" id="density">0%</div>
+      </div>
+
+      <h3 style="margin-top: 2rem;">How to Interact</h3>
+      <div class="info-text">
+        <p style="margin-bottom: 0.75rem;">
+          <strong>📅 Select Year</strong> to view different periods of the board network.
+        </p>
+        <p style="margin-bottom: 0.75rem;">
+          <strong>🖱️ Desktop:</strong> drag nodes, zoom with the mouse wheel, and pan the network.
+        </p>
+        <p style="margin-bottom: 0.75rem;">
+          <strong>📱 Mobile:</strong> scroll the page normally, tap nodes or links to view details.
+        </p>
+        <p>
+          <strong>🎯 Reset View</strong> re-centers and resets zoom on the network.
+        </p>
+      </div>
+
+      <h3 style="margin-top: 2rem;">Metrics</h3>
+      <div class="info-text">
+        <p style="margin-bottom: 0.75rem;">
+          • <strong>Node size:</strong> Number of board connections.
+        </p>
+        <p style="margin-bottom: 0.75rem;">
+          • <strong>Link thickness:</strong> Number of shared directors between firms.
+        </p>
+        <p>• <strong>Colors:</strong> Encodes network roles / connectivity classes.</p>
+      </div>
+    </div>
   </div>
 
   <script>
-    // --- 1. SETUP ---
-    const svg = d3.select("#network");
-    const g = svg.append("g");
-    const tooltip = d3.select("body").append("div").attr("class", "tooltip");
-    
-    let width, height, simulation, zoom;
-    let currentData = { nodes: [], links: [] };
+    // State
+    let currentYear = '2024';
+    let simulation;
+    let transform = d3.zoomIdentity;
+    let svg, g, zoom;
+    let resizeHandler = null;
+    let tooltipPinned = false;
 
-    // Update Dimensions logic
-    function updateDimensions() {
-      const container = document.querySelector('.viz-panel');
-      width = container.clientWidth;
-      height = container.clientHeight - 60; // Subtract control bar height approx 60px
-      svg.attr("viewBox", [0, 0, width, height]);
+    // Elements
+    const yearSelect = document.getElementById('yearSelect');
+    const yearBadge = document.getElementById('yearBadge');
+    const loading = d3.select('.loading');
+    const tooltip = d3.select('body').append('div').attr('class', 'tooltip');
+
+    // Tooltip positioning helper (keeps tooltip fully visible)
+    function positionTooltip(event) {
+      const tooltipNode = tooltip.node();
+      const padding = 12;
+      const tooltipWidth = tooltipNode.offsetWidth || 160;
+      const tooltipHeight = tooltipNode.offsetHeight || 80;
+
+      const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+      const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      let x = event.pageX + 16;
+      let y = event.pageY + 16;
+
+      if (x + tooltipWidth + padding > scrollX + viewportWidth) {
+        x = scrollX + viewportWidth - tooltipWidth - padding;
+      }
+      if (y + tooltipHeight + padding > scrollY + viewportHeight) {
+        y = scrollY + viewportHeight - tooltipHeight - padding;
+      }
+
+      tooltip.style('left', `${x}px`).style('top', `${y}px`);
     }
-    updateDimensions();
 
-    // Zoom Behavior
-    zoom = d3.zoom()
-      .scaleExtent([0.1, 10]) 
-      .on("zoom", (e) => g.attr("transform", e.transform));
-    svg.call(zoom).on("dblclick.zoom", null); 
+    function showNodeTooltip(event, d) {
+      const title = d.label || d.id || 'Node';
+      const size = d.size != null ? d.size : '—';
+      tooltip
+        .style('opacity', 1)
+        .html(`
+          <div class="tooltip-subtitle">Firm</div>
+          <div class="tooltip-title">${title}</div>
+          <div class="tooltip-separator"></div>
+          <div class="tooltip-row">
+            <span class="tooltip-chip">Connections</span>
+            <span>${size}</span>
+          </div>
+          ${d.id ? `<div class="tooltip-row"><span class="tooltip-chip">ID</span><span>${d.id}</span></div>` : ''}
+        `);
+      positionTooltip(event);
+    }
 
-    // --- 2. DATA LOAD & CENTRALITY CALCULATION ---
-    
-    // Uses the graphology library loaded via CDN
-    function calculateCentralities(data) {
-        const Graph = graphology.Graph;
-        const metrics = graphology.metrics;
-        const graph = new Graph();
-
-        // 1. Add Nodes
-        data.nodes.forEach(n => {
-            // Ensure ID is a string for graphology
-            graph.addNode(String(n.id), { label: n.label, ...n });
-        });
-
-        // 2. Add Edges (Network is undirected, weighted by default)
-        data.links.forEach(l => {
-            // Using try/catch as isolated nodes might cause issues if not removed
-            try {
-                // Assuming links are symmetric, use undirected. Add weight if present.
-                graph.addEdge(String(l.source.id), String(l.target.id), { weight: l.weight || 1 });
-            } catch (e) {
-                // Edge already exists or node not found
-            }
-        });
-
-        // 3. Calculate Metrics
-        
-        // Degree Centrality (simple count of connections)
-        const degreeMap = metrics.degree.degree(graph);
-        
-        // Closeness Centrality (how fast a node can reach all others)
-        // Needs to operate on largest connected component for meaningful results if graph is fragmented
-        const components = metrics.connectedComponents.connectedComponents(graph);
-        const largestComponent = components.reduce((max, c) => c.length > max.length ? c : max, []);
-        
-        const closenessMap = metrics.closeness.closeness(graph, {
-            // Use the largest component to avoid division by zero/NaN for isolated nodes
-            nodes: new Set(largestComponent) 
-        });
-        
-        // Betweenness Centrality (how often a node lies on the shortest path between others)
-        const betweennessMap = metrics.betweenness.betweenness(graph);
-
-        // Eigenvector Centrality (influence based on connection to high-scoring nodes)
-        // This is computationally intensive; we use a simple implementation here.
-        let eigenvectorMap = {};
-        try {
-            eigenvectorMap = metrics.eigenvector.eigenvectorCentrality(graph);
-        } catch (e) {
-            console.warn("Eigenvector calculation failed (often due to complex component structure):", e.message);
+    function showLinkTooltip(event, d, dataNodes) {
+      function getNodeLabel(nodeLike) {
+        if (typeof nodeLike === 'string' || typeof nodeLike === 'number') {
+          const match = dataNodes.find(n => n.id === nodeLike);
+          return match ? (match.label || match.id) : nodeLike;
         }
-
-
-        // 4. Merge results back into the D3 data structure
-        const enrichedNodes = data.nodes.map(n => {
-            const nodeId = String(n.id);
-            return {
-                ...n,
-                degree: degreeMap[nodeId] || 0,
-                closeness: closenessMap[nodeId] || 0,
-                betweenness: betweennessMap[nodeId] || 0,
-                eigenvector: eigenvectorMap[nodeId] || 0
-            };
-        });
-
-        return { nodes: enrichedNodes, links: data.links };
-    }
-
-    async function loadYear(year) {
-      document.getElementById('loader').style.opacity = 1;
-      document.getElementById('loader').style.pointerEvents = 'all';
-      document.getElementById('yearBadge').innerText = year;
-
-      try {
-        const rawData = await d3.json(`./data/board_network_${year}_no_isolates.json`);
-        
-        // --- STEP 1: CALCULATE CENTRALITIES ---
-        currentData = calculateCentralities(rawData);
-        
-        // Populate search
-        const list = document.getElementById('firmList');
-        list.innerHTML = '';
-        currentData.nodes.forEach(n => {
-          const op = document.createElement('option');
-          op.value = n.label || n.id;
-          list.appendChild(op);
-        });
-
-        updateStats(currentData);
-        render(currentData);
-        
-      } catch (err) {
-        console.error(err);
-        alert("Error loading data. Are you running a local server?");
-      } finally {
-        setTimeout(() => {
-          document.getElementById('loader').style.opacity = 0;
-          document.getElementById('loader').style.pointerEvents = 'none';
-        }, 500);
+        return nodeLike.label || nodeLike.id;
       }
+
+      const sourceLabel = getNodeLabel(d.source);
+      const targetLabel = getNodeLabel(d.target);
+      const shared = d.weight || d.value || null;
+
+      tooltip
+        .style('opacity', 1)
+        .html(`
+          <div class="tooltip-subtitle">Board Interlock</div>
+          <div class="tooltip-title">${sourceLabel} ⟷ ${targetLabel}</div>
+          <div class="tooltip-separator"></div>
+          <div class="tooltip-row">
+            <span class="tooltip-chip">Shared Directors</span>
+            <span>${shared != null ? shared : '—'}</span>
+          </div>
+        `);
+      positionTooltip(event);
     }
 
-    // --- 3. RENDER & PHYSICS ---
-    function render(data) {
-      g.selectAll("*").remove();
+    // Initialize
+    svg = d3.select('#network');
 
+    // Year change handler
+    yearSelect.addEventListener('change', (e) => {
+      currentYear = e.target.value;
+      loadYear(currentYear);
+    });
+
+    // Hide pinned tooltip on background click (desktop & mobile)
+    svg.on('click', () => {
+      if (tooltipPinned) {
+        tooltipPinned = false;
+        tooltip.style('opacity', 0);
+      }
+    });
+
+    // Load initial year
+    loadYear(currentYear);
+
+    function loadYear(year) {
+      // Show loading
+      loading.style('display', 'block');
+      loading.select('.loading-text').text('Loading network data...');
+      loading.select('.loading-spinner').style('display', 'block');
+      yearBadge.textContent = year;
+
+      // Disable controls
+      document.getElementById('resetBtn').disabled = true;
+      document.getElementById('centerBtn').disabled = true;
+
+      // Clear previous network
+      if (simulation) {
+        simulation.stop();
+      }
+      svg.selectAll('*').remove();
+
+      // Load data
+      const dataUrl = `/data/board_network_${year}_no_isolates.json`;
+
+      d3.json(dataUrl)
+        .then((data) => {
+          loading.style('display', 'none');
+          // Update stats
+          const nodes = data.nodes.length;
+          const links = data.links.length;
+          const avgDegree = (links * 2 / nodes).toFixed(1);
+          const maxPossibleLinks = (nodes * (nodes - 1)) / 2;
+          const density = ((links / maxPossibleLinks) * 100).toFixed(2);
+
+          document.getElementById('totalNodes').textContent = nodes;
+          document.getElementById('totalLinks').textContent = links;
+          document.getElementById('avgDegree').textContent = avgDegree;
+          document.getElementById('density').textContent = density + '%';
+
+          // Enable controls
+          document.getElementById('resetBtn').disabled = false;
+          document.getElementById('centerBtn').disabled = false;
+
+          renderNetwork(data);
+        })
+        .catch((err) => {
+          loading.select('.loading-text').text(`Failed to load data for ${year}. File may not exist.`);
+          loading.select('.loading-spinner').style('display', 'none');
+          console.error(err);
+        });
+    }
+
+    function renderNetwork(data) {
+      const container = document.querySelector('.main-content');
+      const width = container.clientWidth;
+      const height = container.clientHeight - 60;
+
+      transform = d3.zoomIdentity;
+      svg.attr('viewBox', [0, 0, width, height]);
+
+      // Scales
+      const sizes = data.nodes.map((n) => n.size || 10);
       const rScale = d3.scaleSqrt()
-        .domain(d3.extent(data.nodes, d => d.size || 1))
-        .range([4, 16]);
+        .domain([d3.min(sizes) || 1, d3.max(sizes) || 20])
+        .range([5, 20]);
 
-      // MOBILE OPTIMIZATION: Less aggressive physics on phones
-      const isMobile = window.innerWidth < 768;
-      const chargeStrength = isMobile ? -200 : -400; 
-      const distanceMax = isMobile ? 150 : 300;
+      // Root group
+      g = svg.append('g');
 
-      simulation = d3.forceSimulation(data.nodes)
-        .force("link", d3.forceLink(data.links).id(d => d.id).distance(45).strength(0.4))
-        .force("charge", d3.forceManyBody().strength(chargeStrength).distanceMax(distanceMax))
-        .force("center", d3.forceCenter(width / 2, height / 2))
-        .force("x", d3.forceX(width / 2).strength(0.08)) // Stronger gravity to keep clusters visible
-        .force("y", d3.forceY(height / 2).strength(0.08))
-        .force("collide", d3.forceCollide().radius(d => rScale(d.size || 1) + 2).iterations(1));
-
-      // Draw Links
-      const link = g.append("g")
-        .selectAll("line")
+      // Links (more visible styling)
+      const link = g.append('g')
+        .attr('class', 'links')
+        .selectAll('line')
         .data(data.links)
-        .join("line")
-        .attr("stroke", "#94a3b8")
-        .attr("stroke-opacity", 0.4)
-        .attr("stroke-width", d => Math.sqrt(d.weight || 1));
+        .join('line')
+        .attr('stroke', '#64748b')
+        .attr('stroke-opacity', 0.9)
+        .attr('stroke-width', (d) => 1.4 + Math.sqrt(d.weight || 1))
+        .attr('stroke-linecap', 'round');
 
-      // Draw Nodes
-      const node = g.append("g")
-        .selectAll("circle")
+      // Drag behavior (mouse only; disabled on touch for better scrolling)
+      const dragBehavior = d3.drag()
+        .filter((event) => {
+          const pointerType = event.pointerType;
+          if (pointerType === 'touch') return false; // allow native scrolling
+          return !event.button || event.button === 0; // left mouse button
+        })
+        .on('start', dragstarted)
+        .on('drag', dragged)
+        .on('end', dragended);
+
+      // Nodes
+      const node = g.append('g')
+        .attr('class', 'nodes')
+        .selectAll('g')
         .data(data.nodes)
-        .join("circle")
-        .attr("r", d => rScale(d.size || 1))
-        .attr("fill", d => d.color || "#3b82f6")
-        .attr("stroke", "#fff")
-        .attr("stroke-width", 1.5)
-        .call(drag(simulation));
+        .join('g')
+        .call(dragBehavior);
 
-      // INTERACTION
-      node.on("click", (event, d) => {
-        event.stopPropagation();
-        showTooltip(event, d, data);
-        highlightNeighbors(d, data, node, link);
-      });
+      node.append('circle')
+        .attr('r', (d) => rScale(d.size || 10))
+        .attr('fill', (d) => d.color || '#0ea5e9')
+        .attr('stroke', '#e5e7eb')
+        .attr('stroke-width', 1.8)
+        .style('cursor', 'pointer');
 
-      // Background click to clear
-      svg.on("click", () => {
-        tooltip.style("opacity", 0);
-        resetHighlight(node, link);
-      });
+      // Labels (fade in when zoomed)
+      const labels = node.append('text')
+        .text((d) => d.label || d.id)
+        .attr('x', (d) => rScale(d.size || 10) + 6)
+        .attr('y', 4)
+        .attr('font-size', 11)
+        .attr('fill', '#0f172a')
+        .attr('opacity', 0)
+        .style('pointer-events', 'none');
 
-      simulation.on("tick", () => {
+      // Zoom behavior: disabled for touch to keep page scroll natural
+      zoom = d3.zoom()
+        .scaleExtent([0.1, 10])
+        .filter((event) => {
+          const type = event.type;
+          const pointerType = event.pointerType;
+
+          // Disable zoom on touch devices: keep vertical scrolling intuitive
+          if (pointerType === 'touch') return false;
+
+          if (type === 'wheel') return true;
+          if (type === 'mousedown' && event.button === 0) return true;
+          if (type === 'dblclick') return true;
+
+          return false;
+        })
+        .on('zoom', (event) => {
+          transform = event.transform;
+          g.attr('transform', transform);
+          const k = event.transform.k;
+          labels.attr('opacity', k > 2 ? 1 : 0);
+        });
+
+      svg.call(zoom);
+
+      // Node tooltips: desktop (hover) + mobile/desktop (click)
+      node
+        .on('mouseenter', (event, d) => {
+          if (event.pointerType === 'touch') return; // avoid conflict with scrolling
+          tooltipPinned = false;
+          showNodeTooltip(event, d);
+        })
+        .on('mousemove', (event, d) => {
+          if (tooltipPinned) return;
+          if (event.pointerType === 'touch') return;
+          positionTooltip(event);
+        })
+        .on('mouseleave', () => {
+          if (!tooltipPinned) {
+            tooltip.style('opacity', 0);
+          }
+        })
+        .on('click', (event, d) => {
+          // Tap/click to pin tooltip (works well on mobile)
+          event.stopPropagation();
+          tooltipPinned = true;
+          showNodeTooltip(event, d);
+        });
+
+      // Link tooltips: desktop hover + mobile tap
+      link
+        .on('mouseenter', (event, d) => {
+          if (event.pointerType === 'touch') return;
+          tooltipPinned = false;
+          showLinkTooltip(event, d, data.nodes);
+        })
+        .on('mousemove', (event, d) => {
+          if (tooltipPinned) return;
+          if (event.pointerType === 'touch') return;
+          positionTooltip(event);
+        })
+        .on('mouseleave', () => {
+          if (!tooltipPinned) {
+            tooltip.style('opacity', 0);
+          }
+        })
+        .on('click', (event, d) => {
+          event.stopPropagation();
+          tooltipPinned = true;
+          showLinkTooltip(event, d, data.nodes);
+        });
+
+      // *** TIGHTER, MORE COMPACT LAYOUT FOR SUBNETWORKS ***
+      simulation = d3.forceSimulation(data.nodes)
+        .force(
+          'link',
+          d3.forceLink(data.links)
+            .id((d) => d.id)
+            // shorter distance + slightly stronger link -> subnetworks closer
+            .distance((d) => 40 + (Math.sqrt(d.weight || 1) * 6))
+            .strength(0.8)
+        )
+        // weaker repulsion so nodes/components don't push so far apart
+        .force('charge', d3.forceManyBody().strength(-60))
+        // keep general centering
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        // gentle pull toward the center on x/y to keep components close together
+        .force('x', d3.forceX(width / 2).strength(0.08))
+        .force('y', d3.forceY(height / 2).strength(0.08))
+        // small collision radius so nodes can pack reasonably close without overlap
+        .force('collision', d3.forceCollide().radius((d) => rScale(d.size || 10) + 4).iterations(2));
+
+      simulation.on('tick', () => {
         link
-          .attr("x1", d => d.source.x)
-          .attr("y1", d => d.source.y)
-          .attr("x2", d => d.target.x)
-          .attr("y2", d => d.target.y);
+          .attr('x1', (d) => d.source.x)
+          .attr('y1', (d) => d.source.y)
+          .attr('x2', (d) => d.target.x)
+          .attr('y2', (d) => d.target.y);
 
-        node
-          .attr("cx", d => d.x)
-          .attr("cy", d => d.y);
-      });
-    }
-
-    // --- 4. UX HELPERS ---
-    
-    function showTooltip(event, d, data) {
-      const isMobile = window.innerWidth < 768;
-      
-      let html = `
-        <div style="font-weight:700; color:#60a5fa; margin-bottom:4px; font-size:1rem;">${d.label || d.id}</div>
-        <div style="display:grid; grid-template-columns:auto auto; gap:8px; font-size:0.8rem; opacity:0.9;">
-          <span>Connections:</span> <span style="font-weight:600; text-align:right">${d.size || 0}</span>
-          <span style="grid-column: 1 / span 2; border-top: 1px solid rgba(255,255,255,0.1); margin: 4px 0;"></span>
-          <span>Degree Centrality:</span> <span style="font-weight:600; text-align:right">${d.degree ? d.degree.toFixed(3) : '0.000'}</span>
-          <span>Closeness Centrality:</span> <span style="font-weight:600; text-align:right">${d.closeness ? d.closeness.toFixed(3) : '0.000'}</span>
-          <span>Betweenness Centrality:</span> <span style="font-weight:600; text-align:right">${d.betweenness ? d.betweenness.toFixed(3) : '0.000'}</span>
-          <span>Eigenvector Centrality:</span> <span style="font-weight:600; text-align:right">${d.eigenvector ? d.eigenvector.toFixed(3) : '0.000'}</span>
-        </div>
-      `;
-      
-      tooltip.html(html).style("opacity", 1);
-
-      // SMART POSITIONING
-      if (isMobile) {
-        tooltip
-          .style("top", "60px") // Below header
-          .style("left", "50%")
-          .style("transform", "translateX(-50%)")
-          .style("width", "90%")
-          .style("max-width", "400px");
-      } else {
-        // Desktop: Follow node
-        tooltip
-          .style("left", (event.pageX + 15) + "px")
-          .style("top", (event.pageY - 15) + "px")
-          .style("transform", "none")
-          .style("width", "auto");
-      }
-    }
-
-    function highlightNeighbors(d, data, node, link) {
-      const neighbors = new Set();
-      data.links.forEach(l => {
-        if(l.source.id === d.id) neighbors.add(l.target.id);
-        if(l.target.id === d.id) neighbors.add(l.source.id);
+        node.attr('transform', (d) => `translate(${d.x},${d.y})`);
       });
 
-      node.classed("dimmed", n => n.id !== d.id && !neighbors.has(n.id));
-      link.classed("dimmed", l => l.source.id !== d.id && l.target.id !== d.id);
-      
-      // Make selected node pop
-      node.filter(n => n.id === d.id)
-          .attr("stroke", "#f59e0b")
-          .attr("stroke-width", 3);
-    }
+      // Controls
+      document.getElementById('resetBtn').onclick = () => {
+        tooltipPinned = false;
+        tooltip.style('opacity', 0);
+        svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+      };
 
-    function resetHighlight(node, link) {
-      node.classed("dimmed", false).attr("stroke", "#fff").attr("stroke-width", 1.5);
-      link.classed("dimmed", false);
-    }
+      document.getElementById('centerBtn').onclick = () => {
+        tooltipPinned = false;
+        tooltip.style('opacity', 0);
+        simulation.alpha(1).restart();
+      };
 
-    function updateStats(data) {
-      document.getElementById('totalNodes').innerText = data.nodes.length;
-      document.getElementById('totalLinks').innerText = data.links.length;
-      const avg = data.nodes.length ? (data.links.length * 2 / data.nodes.length).toFixed(1) : 0;
-      document.getElementById('avgDegree').innerText = avg;
-      const pot = (data.nodes.length * (data.nodes.length - 1)) / 2;
-      const den = pot ? ((data.links.length / pot) * 100).toFixed(2) : 0;
-      document.getElementById('density').innerText = den + "%";
-    }
-
-    // --- 5. CONTROLS ---
-
-    function resetZoom() {
-      svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
-    }
-
-    function reCenter() {
-      simulation.alpha(1).restart();
-      resetZoom();
-    }
-
-    // Drag Logic
-    function drag(sim) {
-      function start(e) { if(!e.active) sim.alphaTarget(0.3).restart(); e.subject.fx = e.subject.x; e.subject.fy = e.subject.y; }
-      function move(e) { e.subject.fx = e.x; e.subject.fy = e.y; }
-      function end(e) { if(!e.active) sim.alphaTarget(0); e.subject.fx = null; e.subject.fy = null; }
-      return d3.drag().on("start", start).on("drag", move).on("end", end);
-    }
-
-    // Search Logic
-    document.getElementById('searchInput').addEventListener('change', (e) => {
-      const val = e.target.value;
-      const target = currentData.nodes.find(n => (n.label || n.id) === val);
-      if(target) {
-        simulation.alphaTarget(0); 
-        const scale = 4;
-        svg.transition().duration(1000).call(
-          zoom.transform,
-          d3.zoomIdentity.translate(width/2, height/2).scale(scale).translate(-target.x, -target.y)
-        );
-        
-        const nodeSelection = g.selectAll("circle");
-        nodeSelection.filter(n => n.id === target.id).classed("node-highlight", true);
-        setTimeout(() => nodeSelection.classed("node-highlight", false), 2500);
+      // Drag functions
+      function dragstarted(event) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        event.subject.fx = event.subject.x;
+        event.subject.fy = event.subject.y;
       }
-    });
 
-    document.getElementById('yearSelect').addEventListener('change', (e) => loadYear(e.target.value));
-
-    // Handle Resize
-    window.addEventListener('resize', () => {
-      updateDimensions();
-      if(simulation) {
-        simulation.force("center", d3.forceCenter(width / 2, height / 2));
-        simulation.alpha(0.3).restart();
+      function dragged(event) {
+        event.subject.fx = event.x;
+        event.subject.fy = event.y;
       }
-    });
 
-    // Init
-    loadYear("2024");
+      function dragended(event) {
+        if (!event.active) simulation.alphaTarget(0);
+        event.subject.fx = null;
+        event.subject.fy = null;
+      }
 
+      // Responsive – avoid stacking listeners across year changes
+      if (resizeHandler) {
+        window.removeEventListener('resize', resizeHandler);
+      }
+
+      let resizeTimeout;
+      resizeHandler = () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          const w = container.clientWidth;
+          const h = container.clientHeight - 60;
+          svg.attr('viewBox', [0, 0, w, h]);
+          simulation.force('center', d3.forceCenter(w / 2, h / 2));
+          simulation.force('x', d3.forceX(w / 2).strength(0.08));
+          simulation.force('y', d3.forceY(h / 2).strength(0.08));
+          simulation.alpha(0.3).restart();
+        }, 250);
+      };
+
+      window.addEventListener('resize', resizeHandler);
+    }
   </script>
 </body>
 </html>
-```
