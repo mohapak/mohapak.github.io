@@ -18,7 +18,8 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      overflow-x: hidden; /* allow vertical scroll, hide horizontal */
+      overflow-y: auto;
     }
 
     .header {
@@ -367,7 +368,7 @@
       <div class="info-text">
         <p style="margin-bottom: 0.75rem;">• <strong>Node size:</strong> Number of board connections</p>
         <p style="margin-bottom: 0.75rem;">• <strong>Link thickness:</strong> Shared directors</p>
-        <p>• <strong>Colors:</strong> Connection strength</p>
+        <p>• <strong>Colors:</strong> Firms Sector</p>
       </div>
     </div>
   </div>
@@ -378,6 +379,7 @@
     let simulation;
     let transform = d3.zoomIdentity;
     let svg, g, zoom;
+    let resizeHandler = null;
     
     // Elements
     const yearSelect = document.getElementById('yearSelect');
@@ -400,6 +402,8 @@
     function loadYear(year) {
       // Show loading
       loading.style('display', 'block');
+      loading.select('.loading-text').text('Loading network data...');
+      loading.select('.loading-spinner').style('display', 'block');
       yearBadge.textContent = year;
       
       // Disable controls
@@ -414,7 +418,7 @@
       svg.selectAll('*').remove();
       
       // Load data
-      const dataUrl = `/data/board_network_${year}_no_isolates.json`; // correct the file name
+      const dataUrl = `/data/board_network_${year}_no_isolates.json`; // adjust if needed
     
       d3.json(dataUrl)
         .then(data => {
@@ -451,6 +455,7 @@
       const width = container.clientWidth;
       const height = container.clientHeight - 60;
 
+      transform = d3.zoomIdentity;
       svg.attr('viewBox', [0, 0, width, height]);
 
       // Scales
@@ -461,20 +466,6 @@
 
       // Container group
       g = svg.append('g');
-
-      // Zoom behavior
-      zoom = d3.zoom()
-        .scaleExtent([0.1, 10])
-        .on('zoom', (event) => {
-          transform = event.transform;
-          g.attr('transform', transform);
-          
-          // Show labels on zoom
-          const k = event.transform.k;
-          labels.attr('opacity', k > 2 ? 1 : 0);
-        });
-
-      svg.call(zoom);
 
       // Links
       const link = g.append('g')
@@ -511,6 +502,20 @@
         .attr('fill', '#1e293b')
         .attr('opacity', 0)
         .style('pointer-events', 'none');
+
+      // Zoom behavior
+      zoom = d3.zoom()
+        .scaleExtent([0.1, 10])
+        .on('zoom', (event) => {
+          transform = event.transform;
+          g.attr('transform', transform);
+          
+          // Show labels on zoom
+          const k = event.transform.k;
+          labels.attr('opacity', k > 2 ? 1 : 0);
+        });
+
+      svg.call(zoom);
 
       // Tooltips
       node
@@ -584,9 +589,13 @@
         event.subject.fy = null;
       }
 
-      // Responsive
+      // Responsive – prevent multiple listeners when changing years
+      if (resizeHandler) {
+        window.removeEventListener('resize', resizeHandler);
+      }
+
       let resizeTimeout;
-      window.addEventListener('resize', () => {
+      resizeHandler = () => {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
           const w = container.clientWidth;
@@ -595,7 +604,9 @@
           simulation.force('center', d3.forceCenter(w / 2, h / 2));
           simulation.alpha(0.3).restart();
         }, 250);
-      });
+      };
+
+      window.addEventListener('resize', resizeHandler);
     }
   </script>
 </body>
