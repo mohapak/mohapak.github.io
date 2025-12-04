@@ -44,7 +44,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Header */
     .header {
       padding: 0.875rem 1.5rem;
       background: var(--bg);
@@ -95,7 +94,6 @@
       gap: 0.5rem;
     }
 
-    /* Container */
     .container {
       flex: 1;
       display: flex;
@@ -106,7 +104,6 @@
       margin: 0 auto;
     }
 
-    /* Main */
     .main {
       flex: 1;
       background: var(--bg);
@@ -121,7 +118,6 @@
       contain: layout style;
     }
 
-    /* Toolbar */
     .toolbar {
       padding: 0.75rem 1rem;
       background: var(--bg);
@@ -139,7 +135,6 @@
       gap: 0.5rem;
     }
 
-    /* Form Controls */
     .select-wrap {
       display: flex;
       align-items: center;
@@ -220,7 +215,6 @@
       color: var(--text-muted);
     }
 
-    /* Buttons */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -272,7 +266,6 @@
       pointer-events: none;
     }
 
-    /* Network */
     #network {
       flex: 1;
       width: 100%;
@@ -285,7 +278,6 @@
       cursor: grabbing;
     }
 
-    /* Year Badge */
     .year-badge {
       position: absolute;
       top: 4.25rem;
@@ -318,7 +310,6 @@
       50% { opacity: 0.5; }
     }
 
-    /* Zoom Controls */
     .zoom-controls {
       position: absolute;
       bottom: 1rem;
@@ -351,7 +342,6 @@
       border-color: var(--border-hover);
     }
 
-    /* Node Details Panel */
     .node-panel {
       position: absolute;
       top: 4.25rem;
@@ -468,7 +458,6 @@
       transition: width 0.3s;
     }
 
-    /* Sidebar */
     .sidebar {
       width: 300px;
       display: flex;
@@ -511,7 +500,6 @@
       padding: 1rem;
     }
 
-    /* Stats */
     .stats {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -546,63 +534,31 @@
       color: var(--accent);
     }
 
-    /* Legend */
-    .legend {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-
-    .legend-item {
+    /* Color info card */
+    .color-info {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 0.625rem;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.15s;
-      border: 1px solid transparent;
-    }
-
-    .legend-item:hover {
+      gap: 0.75rem;
+      padding: 0.5rem;
       background: var(--bg-secondary);
-      border-color: var(--border);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
     }
 
-    .legend-item.active {
-      background: var(--accent-light);
-      border-color: var(--accent);
-    }
-
-    .legend-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 4px;
+    .color-info-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899, #f59e0b, #10b981);
+      border-radius: var(--radius-sm);
       flex-shrink: 0;
-      box-shadow: var(--shadow-sm);
     }
 
-    .legend-label {
-      font-size: 0.8rem;
+    .color-info-text {
+      font-size: 0.875rem;
       color: var(--text-secondary);
-      flex: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      line-height: 1.4;
     }
 
-    .legend-count {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      font-weight: 600;
-      background: var(--bg-secondary);
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-
-    /* Help */
     .help-item {
       display: flex;
       gap: 0.75rem;
@@ -638,7 +594,6 @@
       font-weight: 600;
     }
 
-    /* Tooltip */
     .tooltip {
       position: absolute;
       pointer-events: none;
@@ -690,7 +645,6 @@
       color: var(--text);
     }
 
-    /* Loading */
     .loading {
       position: absolute;
       inset: 0;
@@ -722,13 +676,11 @@
       font-weight: 500;
     }
 
-    /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-secondary); border-radius: 3px; }
     ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-    /* Responsive */
     @media (max-width: 1024px) {
       .container { flex-direction: column; }
       .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; }
@@ -825,7 +777,7 @@
         <div class="node-panel-header">
           <div>
             <div class="node-panel-title" id="panelTitle">Firm Name</div>
-            <div class="node-panel-subtitle" id="panelSubtitle">Sector</div>
+            <div class="node-panel-subtitle" id="panelSubtitle">Details</div>
           </div>
           <button class="node-panel-close" id="panelClose">✕</button>
         </div>
@@ -875,11 +827,16 @@
         <div class="card-header">
           <h3>
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
-            Sectors
+            Color Legend
           </h3>
         </div>
         <div class="card-body">
-          <div class="legend" id="legend"></div>
+          <div class="color-info">
+            <div class="color-info-icon"></div>
+            <div class="color-info-text">
+              <strong>Same colors are same sectors</strong>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -917,7 +874,6 @@
     let data = null;
     let svg, g, zoom;
     let selectedNode = null;
-    let activeSector = null;
 
     // Elements
     const $ = id => document.getElementById(id);
@@ -929,7 +885,7 @@
     const fmt = (v, d = 3) => v != null && isFinite(v) ? v.toFixed(d) : '—';
     const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 
-    // Centrality computation (optimized with typed arrays)
+    // Centrality computation
     function computeCentralities(nodes, links) {
       const n = nodes.length;
       if (!n) return;
@@ -937,7 +893,6 @@
       const idMap = new Map(nodes.map((node, i) => [node.id, i]));
       const getIdx = ref => typeof ref === 'object' ? idMap.get(ref.id) : idMap.get(ref);
 
-      // Build adjacency list
       const adj = Array.from({ length: n }, () => []);
       links.forEach(l => {
         const u = getIdx(l.source), v = getIdx(l.target);
@@ -947,10 +902,7 @@
         }
       });
 
-      // Degree centrality
       const degree = adj.map(a => a.length);
-
-      // Closeness & Betweenness (combined BFS for efficiency)
       const closeness = new Float32Array(n);
       const betweenness = new Float32Array(n);
 
@@ -996,7 +948,6 @@
         }
       }
 
-      // Eigenvector centrality (power iteration)
       let eigen = new Float32Array(n).fill(1 / n);
       for (let iter = 0; iter < 50; iter++) {
         const next = new Float32Array(n);
@@ -1012,7 +963,6 @@
         if (diff < 1e-6) break;
       }
 
-      // Normalize and assign to nodes
       const maxD = Math.max(...degree, 1);
       const maxC = Math.max(...closeness, 0.001);
       const maxB = Math.max(...betweenness, 0.001);
@@ -1033,7 +983,7 @@
       });
     }
 
-    // Tooltip functions
+    // Tooltip
     function showTooltip(e, html) {
       tooltip.innerHTML = html;
       tooltip.style.opacity = 1;
@@ -1053,12 +1003,12 @@
       tooltip.style.opacity = 0;
     }
 
-    // Node Panel functions
+    // Node Panel
     function showPanel(d) {
       selectedNode = d;
       nodePanel.classList.add('visible');
       $('panelTitle').textContent = d.label || d.id;
-      $('panelSubtitle').textContent = d.sector || 'Unknown Sector';
+      $('panelSubtitle').textContent = `${d.centrality?.degree || 0} connections`;
 
       const c = d.centrality || {};
       $('metricsContainer').innerHTML = [
@@ -1101,7 +1051,7 @@
         .transition().duration(150)
         .attr('opacity', l => data.nodes.indexOf(l.source) === idx || data.nodes.indexOf(l.target) === idx ? 1 : 0.08)
         .attr('stroke', l => data.nodes.indexOf(l.source) === idx || data.nodes.indexOf(l.target) === idx ? '#6366f1' : '#94a3b8')
-        .attr('stroke-width', l => data.nodes.indexOf(l.source) === idx || data.nodes.indexOf(l.target) === idx ? 3 : 1.5);
+        .attr('stroke-width', l => data.nodes.indexOf(l.source) === idx || data.nodes.indexOf(l.target) === idx ? 3.5 : 1.5);
     }
 
     function resetHighlight() {
@@ -1112,56 +1062,9 @@
         .attr('stroke-width', 1.5);
       g.selectAll('.link')
         .transition().duration(150)
-        .attr('opacity', 0.7)
+        .attr('opacity', 0.75)
         .attr('stroke', '#64748b')
-        .attr('stroke-width', d => 1.5 + Math.sqrt(d.weight || 1) * 0.5);
-    }
-
-    // Legend
-    function buildLegend() {
-      const sectors = {};
-      data.nodes.forEach(n => {
-        const s = n.sector || 'Unknown';
-        sectors[s] = sectors[s] || { color: n.color || '#6366f1', count: 0 };
-        sectors[s].count++;
-      });
-
-      const sorted = Object.entries(sectors).sort((a, b) => b[1].count - a[1].count);
-      $('legend').innerHTML = sorted.map(([name, { color, count }]) => `
-        <div class="legend-item" data-sector="${name}">
-          <div class="legend-dot" style="background:${color}"></div>
-          <div class="legend-label">${name}</div>
-          <div class="legend-count">${count}</div>
-        </div>
-      `).join('');
-
-      $('legend').addEventListener('click', e => {
-        const item = e.target.closest('.legend-item');
-        if (!item) return;
-        const sector = item.dataset.sector;
-        
-        if (activeSector === sector) {
-          activeSector = null;
-          item.classList.remove('active');
-          resetHighlight();
-        } else {
-          activeSector = sector;
-          $('legend').querySelectorAll('.legend-item').forEach(i => i.classList.remove('active'));
-          item.classList.add('active');
-          highlightSector(sector);
-        }
-      });
-    }
-
-    function highlightSector(sector) {
-      g.selectAll('.node circle')
-        .transition().duration(150)
-        .attr('opacity', n => (n.sector || 'Unknown') === sector ? 1 : 0.12);
-      g.selectAll('.link')
-        .transition().duration(150)
-        .attr('opacity', l => 
-          (l.source.sector || 'Unknown') === sector || (l.target.sector || 'Unknown') === sector ? 0.7 : 0.05
-        );
+        .attr('stroke-width', d => 1.5 + Math.sqrt(d.weight || 1) * 0.6);
     }
 
     // Search
@@ -1177,12 +1080,11 @@
         .attr('opacity', 0.08);
     }, 150));
 
-    // Load data for year
+    // Load data
     function loadYear(yr) {
       year = yr;
       hideTooltip();
       hidePanel();
-      activeSector = null;
       $('searchInput').value = '';
       loading.style.display = 'flex';
       $('yearBadge').textContent = yr;
@@ -1198,14 +1100,12 @@
           data = d;
           loading.style.display = 'none';
 
-          // Update stats
           const n = d.nodes.length, l = d.links.length;
           $('statNodes').textContent = n;
           $('statLinks').textContent = l;
           $('statDegree').textContent = n ? (l * 2 / n).toFixed(1) : '0';
           $('statDensity').textContent = n > 1 ? ((l / (n * (n - 1) / 2)) * 100).toFixed(1) + '%' : '0%';
 
-          buildLegend();
           renderNetwork();
         })
         .catch(err => {
@@ -1215,7 +1115,7 @@
         });
     }
 
-    // Render network visualization
+    // Render network
     function renderNetwork() {
       const container = document.querySelector('.main');
       const width = container.clientWidth;
@@ -1226,14 +1126,12 @@
         .attr('width', '100%')
         .attr('height', '100%');
 
-      // Node size scale based on degree
       const getSize = d => d.centrality?.degree ?? 5;
       const sizes = data.nodes.map(getSize);
       const rScale = d3.scaleSqrt()
         .domain([Math.min(...sizes), Math.max(...sizes)])
         .range([4, 22]);
 
-      // Link width scale based on weight
       const weights = data.links.map(l => l.weight || 1);
       const linkScale = d3.scaleLinear()
         .domain([Math.min(...weights), Math.max(...weights)])
@@ -1241,7 +1139,7 @@
 
       g = svg.append('g');
 
-      // LINKS - More visible with better styling
+      // Links
       const links = g.append('g')
         .attr('class', 'links')
         .selectAll('line')
@@ -1249,11 +1147,11 @@
         .join('line')
         .attr('class', 'link')
         .attr('stroke', '#64748b')
-        .attr('stroke-opacity', 0.7)
+        .attr('stroke-opacity', 0.75)
         .attr('stroke-width', d => linkScale(d.weight || 1))
         .attr('stroke-linecap', 'round');
 
-      // NODES
+      // Nodes
       const nodes = g.append('g')
         .attr('class', 'nodes')
         .selectAll('g')
@@ -1276,7 +1174,6 @@
             d.fy = null; 
           }));
 
-      // Node circles with better visibility
       nodes.append('circle')
         .attr('r', d => rScale(getSize(d)))
         .attr('fill', d => d.color || '#6366f1')
@@ -1285,7 +1182,6 @@
         .style('cursor', 'pointer')
         .style('filter', 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))');
 
-      // Labels (visible on zoom)
       const labels = nodes.append('text')
         .text(d => d.label || d.id)
         .attr('x', d => rScale(getSize(d)) + 6)
@@ -1296,7 +1192,7 @@
         .attr('opacity', 0)
         .style('pointer-events', 'none');
 
-      // Zoom behavior
+      // Zoom
       zoom = d3.zoom()
         .scaleExtent([0.1, 8])
         .on('zoom', e => {
@@ -1306,14 +1202,13 @@
 
       svg.call(zoom);
 
-      // Node interactions
+      // Node events - REMOVED SECTOR FROM TOOLTIP
       nodes
         .on('mouseenter', (e, d) => {
           const c = d.centrality || {};
           showTooltip(e, `
             <div class="tooltip-type">Firm</div>
             <div class="tooltip-title">${d.label || d.id}</div>
-            <div class="tooltip-row"><span class="tooltip-label">Sector</span><span class="tooltip-value">${d.sector || 'Unknown'}</span></div>
             <div class="tooltip-row"><span class="tooltip-label">Degree</span><span class="tooltip-value">${c.degree ?? '—'}</span></div>
             <div class="tooltip-row"><span class="tooltip-label">Closeness</span><span class="tooltip-value">${fmt(c.closeness)}</span></div>
             <div class="tooltip-row"><span class="tooltip-label">Betweenness</span><span class="tooltip-value">${fmt(c.betweenness)}</span></div>
@@ -1327,7 +1222,7 @@
           showPanel(d); 
         });
 
-      // Link interactions
+      // Link events
       links
         .on('mouseenter', (e, d) => {
           showTooltip(e, `
@@ -1335,7 +1230,6 @@
             <div class="tooltip-title">${d.source.label || d.source.id} ↔ ${d.target.label || d.target.id}</div>
             <div class="tooltip-row"><span class="tooltip-label">Shared Directors</span><span class="tooltip-value">${d.weight || 1}</span></div>
           `);
-          // Highlight this link
           d3.select(e.target)
             .attr('stroke', '#6366f1')
             .attr('stroke-width', linkScale(d.weight || 1) + 2);
@@ -1368,7 +1262,7 @@
         nodes.attr('transform', d => `translate(${d.x},${d.y})`);
       });
 
-      // Resize handler
+      // Resize
       const resize = debounce(() => {
         const w = container.clientWidth, h = container.clientHeight - 52;
         svg.attr('viewBox', `0 0 ${w} ${h}`);
@@ -1377,7 +1271,7 @@
       window.addEventListener('resize', resize);
     }
 
-    // Fit network to view
+    // Fit to view
     function fitView() {
       if (!data?.nodes.length) return;
       const container = document.querySelector('.main');
@@ -1399,14 +1293,12 @@
       svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
     }
 
-    // Event listeners
+    // Events
     $('yearSelect').addEventListener('change', e => loadYear(e.target.value));
     $('panelClose').addEventListener('click', hidePanel);
     
     $('resetBtn').addEventListener('click', () => {
       hidePanel();
-      activeSector = null;
-      $('legend').querySelectorAll('.legend-item').forEach(i => i.classList.remove('active'));
       $('searchInput').value = '';
       resetHighlight();
       svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity);
