@@ -44,6 +44,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    /* Header */
     .header {
       padding: 0.875rem 1.5rem;
       background: var(--bg);
@@ -94,6 +95,7 @@
       gap: 0.5rem;
     }
 
+    /* Container */
     .container {
       flex: 1;
       display: flex;
@@ -104,6 +106,7 @@
       margin: 0 auto;
     }
 
+    /* Main */
     .main {
       flex: 1;
       background: var(--bg);
@@ -118,6 +121,7 @@
       contain: layout style;
     }
 
+    /* Toolbar */
     .toolbar {
       padding: 0.75rem 1rem;
       background: var(--bg);
@@ -135,6 +139,7 @@
       gap: 0.5rem;
     }
 
+    /* Form Controls */
     .select-wrap {
       display: flex;
       align-items: center;
@@ -215,6 +220,7 @@
       color: var(--text-muted);
     }
 
+    /* Buttons */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -266,6 +272,7 @@
       pointer-events: none;
     }
 
+    /* Network */
     #network {
       flex: 1;
       width: 100%;
@@ -278,6 +285,7 @@
       cursor: grabbing;
     }
 
+    /* Year Badge */
     .year-badge {
       position: absolute;
       top: 4.25rem;
@@ -310,6 +318,7 @@
       50% { opacity: 0.5; }
     }
 
+    /* Zoom Controls */
     .zoom-controls {
       position: absolute;
       bottom: 1rem;
@@ -342,6 +351,7 @@
       border-color: var(--border-hover);
     }
 
+    /* Node Details Panel */
     .node-panel {
       position: absolute;
       top: 4.25rem;
@@ -458,6 +468,7 @@
       transition: width 0.3s;
     }
 
+    /* Sidebar */
     .sidebar {
       width: 300px;
       display: flex;
@@ -500,6 +511,7 @@
       padding: 1rem;
     }
 
+    /* Stats */
     .stats {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -534,6 +546,7 @@
       color: var(--accent);
     }
 
+    /* Legend */
     .legend {
       display: flex;
       flex-direction: column;
@@ -589,6 +602,7 @@
       border-radius: 4px;
     }
 
+    /* Help */
     .help-item {
       display: flex;
       gap: 0.75rem;
@@ -624,6 +638,7 @@
       font-weight: 600;
     }
 
+    /* Tooltip */
     .tooltip {
       position: absolute;
       pointer-events: none;
@@ -675,6 +690,7 @@
       color: var(--text);
     }
 
+    /* Loading */
     .loading {
       position: absolute;
       inset: 0;
@@ -706,49 +722,13 @@
       font-weight: 500;
     }
 
-    /* Layout controls */
-    .layout-control {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 0.75rem;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-    }
-
-    .layout-control label {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      font-weight: 500;
-      white-space: nowrap;
-    }
-
-    .layout-control input[type="range"] {
-      width: 80px;
-      height: 4px;
-      -webkit-appearance: none;
-      background: var(--border);
-      border-radius: 2px;
-      outline: none;
-    }
-
-    .layout-control input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px;
-      height: 14px;
-      background: var(--accent);
-      border-radius: 50%;
-      cursor: pointer;
-    }
-
+    /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-secondary); border-radius: 3px; }
     ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
+    /* Responsive */
     @media (max-width: 1024px) {
       .container { flex-direction: column; }
       .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; }
@@ -759,7 +739,7 @@
       .header { flex-wrap: wrap; padding: 0.75rem 1rem; }
       .header-actions { display: none; }
       .toolbar { flex-direction: column; }
-      .toolbar-group { width: 100%; justify-content: center; flex-wrap: wrap; }
+      .toolbar-group { width: 100%; justify-content: center; }
       .search-box { width: 100%; }
       .card { min-width: 100%; }
       .node-panel {
@@ -819,10 +799,6 @@
           <div class="search-box">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             <input type="text" id="searchInput" placeholder="Search firms...">
-          </div>
-          <div class="layout-control">
-            <label>Clustering</label>
-            <input type="range" id="clusterSlider" min="1" max="100" value="70" title="Adjust network density">
           </div>
         </div>
         <div class="toolbar-group">
@@ -927,10 +903,6 @@
             <div class="help-icon">👆</div>
             <div class="help-text"><strong>Click</strong> node for details</div>
           </div>
-          <div class="help-item">
-            <div class="help-icon">⚙️</div>
-            <div class="help-text"><strong>Clustering</strong> slider adjusts network tightness</div>
-          </div>
         </div>
       </div>
     </aside>
@@ -946,20 +918,18 @@
     let svg, g, zoom;
     let selectedNode = null;
     let activeSector = null;
-    let clusterStrength = 70; // Default clustering value
 
     // Elements
     const $ = id => document.getElementById(id);
     const tooltip = $('tooltip');
     const loading = $('loading');
     const nodePanel = $('nodePanel');
-    const clusterSlider = $('clusterSlider');
 
     // Utilities
     const fmt = (v, d = 3) => v != null && isFinite(v) ? v.toFixed(d) : '—';
     const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 
-    // Centrality computation
+    // Centrality computation (optimized with typed arrays)
     function computeCentralities(nodes, links) {
       const n = nodes.length;
       if (!n) return;
@@ -967,6 +937,7 @@
       const idMap = new Map(nodes.map((node, i) => [node.id, i]));
       const getIdx = ref => typeof ref === 'object' ? idMap.get(ref.id) : idMap.get(ref);
 
+      // Build adjacency list
       const adj = Array.from({ length: n }, () => []);
       links.forEach(l => {
         const u = getIdx(l.source), v = getIdx(l.target);
@@ -976,7 +947,10 @@
         }
       });
 
+      // Degree centrality
       const degree = adj.map(a => a.length);
+
+      // Closeness & Betweenness (combined BFS for efficiency)
       const closeness = new Float32Array(n);
       const betweenness = new Float32Array(n);
 
@@ -1022,6 +996,7 @@
         }
       }
 
+      // Eigenvector centrality (power iteration)
       let eigen = new Float32Array(n).fill(1 / n);
       for (let iter = 0; iter < 50; iter++) {
         const next = new Float32Array(n);
@@ -1037,6 +1012,7 @@
         if (diff < 1e-6) break;
       }
 
+      // Normalize and assign to nodes
       const maxD = Math.max(...degree, 1);
       const maxC = Math.max(...closeness, 0.001);
       const maxB = Math.max(...betweenness, 0.001);
@@ -1057,7 +1033,7 @@
       });
     }
 
-    // Tooltip
+    // Tooltip functions
     function showTooltip(e, html) {
       tooltip.innerHTML = html;
       tooltip.style.opacity = 1;
@@ -1077,7 +1053,7 @@
       tooltip.style.opacity = 0;
     }
 
-    // Node Panel
+    // Node Panel functions
     function showPanel(d) {
       selectedNode = d;
       nodePanel.classList.add('visible');
@@ -1125,7 +1101,7 @@
         .transition().duration(150)
         .attr('opacity', l => data.nodes.indexOf(l.source) === idx || data.nodes.indexOf(l.target) === idx ? 1 : 0.08)
         .attr('stroke', l => data.nodes.indexOf(l.source) === idx || data.nodes.indexOf(l.target) === idx ? '#6366f1' : '#94a3b8')
-        .attr('stroke-width', l => data.nodes.indexOf(l.source) === idx || data.nodes.indexOf(l.target) === idx ? 3.5 : 1.5);
+        .attr('stroke-width', l => data.nodes.indexOf(l.source) === idx || data.nodes.indexOf(l.target) === idx ? 3 : 1.5);
     }
 
     function resetHighlight() {
@@ -1136,9 +1112,9 @@
         .attr('stroke-width', 1.5);
       g.selectAll('.link')
         .transition().duration(150)
-        .attr('opacity', 0.75)
+        .attr('opacity', 0.7)
         .attr('stroke', '#64748b')
-        .attr('stroke-width', d => 1.5 + Math.sqrt(d.weight || 1) * 0.6);
+        .attr('stroke-width', d => 1.5 + Math.sqrt(d.weight || 1) * 0.5);
     }
 
     // Legend
@@ -1184,7 +1160,7 @@
       g.selectAll('.link')
         .transition().duration(150)
         .attr('opacity', l => 
-          (l.source.sector || 'Unknown') === sector || (l.target.sector || 'Unknown') === sector ? 0.75 : 0.05
+          (l.source.sector || 'Unknown') === sector || (l.target.sector || 'Unknown') === sector ? 0.7 : 0.05
         );
     }
 
@@ -1201,63 +1177,7 @@
         .attr('opacity', 0.08);
     }, 150));
 
-    // Get force parameters based on cluster strength (1-100)
-    function getForceParams(strength) {
-      // Higher strength = tighter clusters
-      const t = strength / 100;
-      return {
-        linkDistance: 20 + (1 - t) * 60,      // 20-80: shorter = tighter
-        linkStrength: 0.4 + t * 0.5,           // 0.4-0.9: stronger = tighter
-        chargeStrength: -30 - (1 - t) * 120,   // -30 to -150: less negative = tighter
-        chargeDistanceMax: 100 + (1 - t) * 250, // 100-350: shorter = tighter clusters
-        centerStrength: 0.05 + t * 0.1,        // 0.05-0.15: stronger center pull
-        collisionRadius: 1 + (1 - t) * 3       // 1-4: smaller = nodes can be closer
-      };
-    }
-
-    // Update simulation forces
-    function updateForces() {
-      if (!sim || !data) return;
-      
-      const params = getForceParams(clusterStrength);
-      const container = document.querySelector('.main');
-      const width = container.clientWidth;
-      const height = container.clientHeight - 52;
-
-      const getSize = d => d.centrality?.degree ?? 5;
-      const sizes = data.nodes.map(getSize);
-      const rScale = d3.scaleSqrt()
-        .domain([Math.min(...sizes), Math.max(...sizes)])
-        .range([4, 22]);
-
-      sim
-        .force('link')
-          .distance(params.linkDistance)
-          .strength(params.linkStrength);
-      
-      sim
-        .force('charge')
-          .strength(params.chargeStrength)
-          .distanceMax(params.chargeDistanceMax);
-      
-      sim
-        .force('center')
-          .strength && sim.force('centerX')?.strength(params.centerStrength);
-      
-      sim
-        .force('collision')
-          .radius(d => rScale(getSize(d)) + params.collisionRadius);
-
-      sim.alpha(0.8).restart();
-    }
-
-    // Cluster slider event
-    clusterSlider.addEventListener('input', e => {
-      clusterStrength = parseInt(e.target.value);
-      updateForces();
-    });
-
-    // Load data
+    // Load data for year
     function loadYear(yr) {
       year = yr;
       hideTooltip();
@@ -1278,6 +1198,7 @@
           data = d;
           loading.style.display = 'none';
 
+          // Update stats
           const n = d.nodes.length, l = d.links.length;
           $('statNodes').textContent = n;
           $('statLinks').textContent = l;
@@ -1294,7 +1215,7 @@
         });
     }
 
-    // Render network
+    // Render network visualization
     function renderNetwork() {
       const container = document.querySelector('.main');
       const width = container.clientWidth;
@@ -1305,12 +1226,14 @@
         .attr('width', '100%')
         .attr('height', '100%');
 
+      // Node size scale based on degree
       const getSize = d => d.centrality?.degree ?? 5;
       const sizes = data.nodes.map(getSize);
       const rScale = d3.scaleSqrt()
         .domain([Math.min(...sizes), Math.max(...sizes)])
         .range([4, 22]);
 
+      // Link width scale based on weight
       const weights = data.links.map(l => l.weight || 1);
       const linkScale = d3.scaleLinear()
         .domain([Math.min(...weights), Math.max(...weights)])
@@ -1318,7 +1241,7 @@
 
       g = svg.append('g');
 
-      // Links - more visible
+      // LINKS - More visible with better styling
       const links = g.append('g')
         .attr('class', 'links')
         .selectAll('line')
@@ -1326,11 +1249,11 @@
         .join('line')
         .attr('class', 'link')
         .attr('stroke', '#64748b')
-        .attr('stroke-opacity', 0.75)
+        .attr('stroke-opacity', 0.7)
         .attr('stroke-width', d => linkScale(d.weight || 1))
         .attr('stroke-linecap', 'round');
 
-      // Nodes
+      // NODES
       const nodes = g.append('g')
         .attr('class', 'nodes')
         .selectAll('g')
@@ -1353,6 +1276,7 @@
             d.fy = null; 
           }));
 
+      // Node circles with better visibility
       nodes.append('circle')
         .attr('r', d => rScale(getSize(d)))
         .attr('fill', d => d.color || '#6366f1')
@@ -1361,6 +1285,7 @@
         .style('cursor', 'pointer')
         .style('filter', 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))');
 
+      // Labels (visible on zoom)
       const labels = nodes.append('text')
         .text(d => d.label || d.id)
         .attr('x', d => rScale(getSize(d)) + 6)
@@ -1371,7 +1296,7 @@
         .attr('opacity', 0)
         .style('pointer-events', 'none');
 
-      // Zoom
+      // Zoom behavior
       zoom = d3.zoom()
         .scaleExtent([0.1, 8])
         .on('zoom', e => {
@@ -1381,7 +1306,7 @@
 
       svg.call(zoom);
 
-      // Node events
+      // Node interactions
       nodes
         .on('mouseenter', (e, d) => {
           const c = d.centrality || {};
@@ -1402,7 +1327,7 @@
           showPanel(d); 
         });
 
-      // Link events
+      // Link interactions
       links
         .on('mouseenter', (e, d) => {
           showTooltip(e, `
@@ -1410,6 +1335,7 @@
             <div class="tooltip-title">${d.source.label || d.source.id} ↔ ${d.target.label || d.target.id}</div>
             <div class="tooltip-row"><span class="tooltip-label">Shared Directors</span><span class="tooltip-value">${d.weight || 1}</span></div>
           `);
+          // Highlight this link
           d3.select(e.target)
             .attr('stroke', '#6366f1')
             .attr('stroke-width', linkScale(d.weight || 1) + 2);
@@ -1424,26 +1350,14 @@
 
       svg.on('click', hidePanel);
 
-      // Get initial force parameters
-      const params = getForceParams(clusterStrength);
-
-      // Force simulation with TIGHTER clustering
+      // Force simulation
       sim = d3.forceSimulation(data.nodes)
-        .force('link', d3.forceLink(data.links)
-          .id(d => d.id)
-          .distance(params.linkDistance)
-          .strength(params.linkStrength))
-        .force('charge', d3.forceManyBody()
-          .strength(params.chargeStrength)
-          .distanceMax(params.chargeDistanceMax))
+        .force('link', d3.forceLink(data.links).id(d => d.id).distance(60).strength(0.4))
+        .force('charge', d3.forceManyBody().strength(-100).distanceMax(350))
         .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('centerX', d3.forceX(width / 2).strength(params.centerStrength))
-        .force('centerY', d3.forceY(height / 2).strength(params.centerStrength))
-        .force('collision', d3.forceCollide()
-          .radius(d => rScale(getSize(d)) + params.collisionRadius)
-          .strength(0.7))
-        .velocityDecay(0.3)
-        .alphaDecay(0.015);
+        .force('collision', d3.forceCollide().radius(d => rScale(getSize(d)) + 3))
+        .velocityDecay(0.4)
+        .alphaDecay(0.02);
 
       sim.on('tick', () => {
         links
@@ -1454,19 +1368,16 @@
         nodes.attr('transform', d => `translate(${d.x},${d.y})`);
       });
 
-      // Resize
+      // Resize handler
       const resize = debounce(() => {
         const w = container.clientWidth, h = container.clientHeight - 52;
         svg.attr('viewBox', `0 0 ${w} ${h}`);
-        sim.force('center', d3.forceCenter(w / 2, h / 2));
-        sim.force('centerX', d3.forceX(w / 2).strength(getForceParams(clusterStrength).centerStrength));
-        sim.force('centerY', d3.forceY(h / 2).strength(getForceParams(clusterStrength).centerStrength));
-        sim.alpha(0.3).restart();
+        sim.force('center', d3.forceCenter(w / 2, h / 2)).alpha(0.3).restart();
       }, 200);
       window.addEventListener('resize', resize);
     }
 
-    // Fit to view
+    // Fit network to view
     function fitView() {
       if (!data?.nodes.length) return;
       const container = document.querySelector('.main');
@@ -1488,7 +1399,7 @@
       svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
     }
 
-    // Events
+    // Event listeners
     $('yearSelect').addEventListener('change', e => loadYear(e.target.value));
     $('panelClose').addEventListener('click', hidePanel);
     
@@ -1497,10 +1408,7 @@
       activeSector = null;
       $('legend').querySelectorAll('.legend-item').forEach(i => i.classList.remove('active'));
       $('searchInput').value = '';
-      clusterSlider.value = 70;
-      clusterStrength = 70;
       resetHighlight();
-      updateForces();
       svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity);
     });
     
