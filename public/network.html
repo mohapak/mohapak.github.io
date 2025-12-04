@@ -10,26 +10,32 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #09090b;
-      --bg-card: #18181b;
-      --bg-hover: #27272a;
-      --border: #27272a;
-      --border-hover: #3f3f46;
-      --text: #fafafa;
-      --text-secondary: #a1a1aa;
-      --text-muted: #71717a;
+      --bg: #ffffff;
+      --bg-secondary: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-hover: #f1f5f9;
+      --border: #e2e8f0;
+      --border-hover: #cbd5e1;
+      --text: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
       --accent: #6366f1;
-      --accent-dim: rgba(99, 102, 241, 0.15);
-      --success: #22c55e;
+      --accent-light: #e0e7ff;
+      --accent-dim: rgba(99, 102, 241, 0.1);
+      --success: #10b981;
+      --link-color: #64748b;
+      --link-highlight: #6366f1;
       --radius: 12px;
       --radius-sm: 8px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
+      background: var(--bg-secondary);
       color: var(--text);
       min-height: 100vh;
       display: flex;
@@ -40,16 +46,17 @@
 
     /* Header */
     .header {
-      padding: 1rem 1.5rem;
+      padding: 0.875rem 1.5rem;
+      background: var(--bg);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      background: var(--bg);
       position: sticky;
       top: 0;
       z-index: 100;
+      box-shadow: var(--shadow-sm);
     }
 
     .header-left {
@@ -67,12 +74,14 @@
       place-items: center;
       font-weight: 700;
       font-size: 1rem;
+      color: white;
     }
 
     .header-title h1 {
       font-size: 1rem;
       font-weight: 600;
       letter-spacing: -0.02em;
+      color: var(--text);
     }
 
     .header-title p {
@@ -100,7 +109,7 @@
     /* Main */
     .main {
       flex: 1;
-      background: var(--bg-card);
+      background: var(--bg);
       border-radius: var(--radius);
       border: 1px solid var(--border);
       overflow: hidden;
@@ -108,12 +117,14 @@
       flex-direction: column;
       min-height: 550px;
       position: relative;
+      box-shadow: var(--shadow);
       contain: layout style;
     }
 
     /* Toolbar */
     .toolbar {
       padding: 0.75rem 1rem;
+      background: var(--bg);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
@@ -134,15 +145,16 @@
       align-items: center;
       gap: 0.5rem;
       padding: 0.5rem 0.75rem;
-      background: var(--bg);
+      background: var(--bg-secondary);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      transition: border-color 0.15s;
+      transition: all 0.15s;
     }
 
     .select-wrap:hover,
     .select-wrap:focus-within {
       border-color: var(--accent);
+      background: var(--bg);
     }
 
     .select-wrap label {
@@ -165,7 +177,7 @@
     }
 
     .select-wrap select option {
-      background: var(--bg-card);
+      background: var(--bg);
     }
 
     .search-box {
@@ -173,15 +185,17 @@
       align-items: center;
       gap: 0.5rem;
       padding: 0.5rem 0.75rem;
-      background: var(--bg);
+      background: var(--bg-secondary);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      min-width: 180px;
-      transition: border-color 0.15s;
+      min-width: 200px;
+      transition: all 0.15s;
     }
 
     .search-box:focus-within {
       border-color: var(--accent);
+      background: var(--bg);
+      box-shadow: 0 0 0 3px var(--accent-dim);
     }
 
     .search-box svg {
@@ -243,6 +257,8 @@
 
     .btn-primary:hover {
       opacity: 0.9;
+      background: #5558e3;
+      border-color: #5558e3;
     }
 
     .btn-icon {
@@ -260,7 +276,7 @@
     #network {
       flex: 1;
       width: 100%;
-      background: var(--bg);
+      background: var(--bg-secondary);
       cursor: grab;
       display: block;
     }
@@ -272,9 +288,9 @@
     /* Year Badge */
     .year-badge {
       position: absolute;
-      top: 4rem;
+      top: 4.25rem;
       left: 1rem;
-      background: var(--bg-card);
+      background: var(--bg);
       border: 1px solid var(--border);
       padding: 0.5rem 1rem;
       border-radius: var(--radius-sm);
@@ -284,6 +300,8 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      box-shadow: var(--shadow);
+      color: var(--text);
     }
 
     .year-badge::before {
@@ -292,6 +310,12 @@
       height: 8px;
       background: var(--success);
       border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
     }
 
     /* Zoom Controls */
@@ -306,9 +330,9 @@
     }
 
     .zoom-btn {
-      width: 32px;
-      height: 32px;
-      background: var(--bg-card);
+      width: 34px;
+      height: 34px;
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       color: var(--text-secondary);
@@ -316,22 +340,24 @@
       display: grid;
       place-items: center;
       font-size: 1.25rem;
-      font-weight: 300;
+      font-weight: 400;
       transition: all 0.15s;
+      box-shadow: var(--shadow-sm);
     }
 
     .zoom-btn:hover {
       background: var(--bg-hover);
       color: var(--text);
+      border-color: var(--border-hover);
     }
 
-    /* Node Details */
+    /* Node Details Panel */
     .node-panel {
       position: absolute;
-      top: 4rem;
+      top: 4.25rem;
       right: 1rem;
-      width: 260px;
-      background: var(--bg-card);
+      width: 280px;
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       z-index: 20;
@@ -339,6 +365,7 @@
       visibility: hidden;
       transform: translateX(10px);
       transition: all 0.2s;
+      box-shadow: var(--shadow);
     }
 
     .node-panel.visible {
@@ -353,11 +380,14 @@
       display: flex;
       justify-content: space-between;
       gap: 0.5rem;
+      background: var(--bg-secondary);
+      border-radius: var(--radius) var(--radius) 0 0;
     }
 
     .node-panel-title {
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
+      color: var(--text);
     }
 
     .node-panel-subtitle {
@@ -367,8 +397,8 @@
     }
 
     .node-panel-close {
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 6px;
@@ -378,12 +408,13 @@
       place-items: center;
       transition: all 0.15s;
       flex-shrink: 0;
+      font-size: 0.875rem;
     }
 
     .node-panel-close:hover {
-      background: #ef4444;
-      border-color: #ef4444;
-      color: white;
+      background: #fee2e2;
+      border-color: #fecaca;
+      color: #dc2626;
     }
 
     .node-panel-body {
@@ -395,12 +426,12 @@
       text-transform: uppercase;
       letter-spacing: 0.04em;
       color: var(--text-muted);
-      margin-bottom: 0.5rem;
-      font-weight: 500;
+      margin-bottom: 0.625rem;
+      font-weight: 600;
     }
 
     .metric-bar {
-      margin-bottom: 0.625rem;
+      margin-bottom: 0.75rem;
     }
 
     .metric-bar:last-child {
@@ -410,8 +441,8 @@
     .metric-header {
       display: flex;
       justify-content: space-between;
-      font-size: 0.75rem;
-      margin-bottom: 4px;
+      font-size: 0.8rem;
+      margin-bottom: 5px;
     }
 
     .metric-label {
@@ -420,18 +451,20 @@
 
     .metric-value {
       font-weight: 600;
+      color: var(--text);
     }
 
     .metric-track {
-      height: 4px;
-      background: var(--bg);
-      border-radius: 2px;
+      height: 6px;
+      background: var(--bg-secondary);
+      border-radius: 3px;
+      border: 1px solid var(--border);
     }
 
     .metric-fill {
       height: 100%;
-      background: var(--accent);
-      border-radius: 2px;
+      background: linear-gradient(90deg, var(--accent), #8b5cf6);
+      border-radius: 3px;
       transition: width 0.3s;
     }
 
@@ -444,14 +477,17 @@
     }
 
     .card {
-      background: var(--bg-card);
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: var(--radius);
+      box-shadow: var(--shadow);
     }
 
     .card-header {
       padding: 0.875rem 1rem;
       border-bottom: 1px solid var(--border);
+      background: var(--bg-secondary);
+      border-radius: var(--radius) var(--radius) 0 0;
     }
 
     .card-header h3 {
@@ -483,15 +519,16 @@
     }
 
     .stat {
-      background: var(--bg);
-      padding: 0.75rem;
+      background: var(--bg-secondary);
+      padding: 0.875rem;
       border-radius: var(--radius-sm);
-      border: 1px solid transparent;
-      transition: border-color 0.15s;
+      border: 1px solid var(--border);
+      transition: all 0.15s;
     }
 
     .stat:hover {
-      border-color: var(--border);
+      border-color: var(--accent);
+      background: var(--accent-dim);
     }
 
     .stat-label {
@@ -499,11 +536,12 @@
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      margin-bottom: 2px;
+      margin-bottom: 4px;
+      font-weight: 500;
     }
 
     .stat-value {
-      font-size: 1.375rem;
+      font-size: 1.5rem;
       font-weight: 700;
       color: var(--accent);
     }
@@ -513,7 +551,7 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
-      max-height: 180px;
+      max-height: 200px;
       overflow-y: auto;
     }
 
@@ -521,25 +559,29 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.5rem;
+      padding: 0.5rem 0.625rem;
       border-radius: 6px;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: all 0.15s;
+      border: 1px solid transparent;
     }
 
     .legend-item:hover {
-      background: var(--bg);
+      background: var(--bg-secondary);
+      border-color: var(--border);
     }
 
     .legend-item.active {
-      background: var(--accent-dim);
+      background: var(--accent-light);
+      border-color: var(--accent);
     }
 
     .legend-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 3px;
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
       flex-shrink: 0;
+      box-shadow: var(--shadow-sm);
     }
 
     .legend-label {
@@ -554,15 +596,18 @@
     .legend-count {
       font-size: 0.75rem;
       color: var(--text-muted);
-      font-weight: 500;
+      font-weight: 600;
+      background: var(--bg-secondary);
+      padding: 2px 6px;
+      border-radius: 4px;
     }
 
     /* Help */
     .help-item {
       display: flex;
-      gap: 0.625rem;
+      gap: 0.75rem;
       align-items: flex-start;
-      margin-bottom: 0.625rem;
+      margin-bottom: 0.75rem;
     }
 
     .help-item:last-child {
@@ -570,25 +615,27 @@
     }
 
     .help-icon {
-      width: 26px;
-      height: 26px;
-      background: var(--bg);
+      width: 28px;
+      height: 28px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
       border-radius: 6px;
       display: grid;
       place-items: center;
-      font-size: 0.8rem;
+      font-size: 0.875rem;
       flex-shrink: 0;
     }
 
     .help-text {
       font-size: 0.8rem;
       color: var(--text-secondary);
-      line-height: 1.4;
+      line-height: 1.5;
+      padding-top: 4px;
     }
 
     .help-text strong {
       color: var(--text);
-      font-weight: 500;
+      font-weight: 600;
     }
 
     /* Tooltip */
@@ -596,14 +643,15 @@
       position: absolute;
       pointer-events: none;
       opacity: 0;
-      background: var(--bg-card);
+      background: var(--bg);
       border: 1px solid var(--border);
-      padding: 0.75rem 1rem;
+      padding: 0.875rem 1rem;
       border-radius: var(--radius-sm);
       font-size: 0.8rem;
-      max-width: 280px;
+      max-width: 300px;
       z-index: 1000;
       transition: opacity 0.1s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
     .tooltip-type {
@@ -611,19 +659,21 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
       color: var(--accent);
-      font-weight: 600;
-      margin-bottom: 2px;
+      font-weight: 700;
+      margin-bottom: 4px;
     }
 
     .tooltip-title {
       font-weight: 600;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.625rem;
+      color: var(--text);
+      font-size: 0.9rem;
     }
 
     .tooltip-row {
       display: flex;
       justify-content: space-between;
-      padding: 4px 0;
+      padding: 5px 0;
       border-bottom: 1px solid var(--border);
     }
 
@@ -637,13 +687,14 @@
 
     .tooltip-value {
       font-weight: 600;
+      color: var(--text);
     }
 
     /* Loading */
     .loading {
       position: absolute;
       inset: 0;
-      background: rgba(9, 9, 11, 0.95);
+      background: rgba(255, 255, 255, 0.95);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -652,8 +703,8 @@
     }
 
     .spinner {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border: 3px solid var(--border);
       border-top-color: var(--accent);
       border-radius: 50%;
@@ -666,14 +717,15 @@
     }
 
     .loading-text {
-      font-size: 0.875rem;
+      font-size: 0.9rem;
       color: var(--text-secondary);
+      font-weight: 500;
     }
 
     /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-track { background: var(--bg-secondary); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
     /* Responsive */
@@ -698,6 +750,8 @@
         width: 100%;
         border-radius: var(--radius) var(--radius) 0 0;
         transform: translateY(100%);
+        max-height: 50vh;
+        overflow-y: auto;
       }
       .node-panel.visible { transform: translateY(0); }
     }
@@ -709,13 +763,13 @@
       <div class="logo">B</div>
       <div class="header-title">
         <h1>Board Directors Network</h1>
-        <p>Tehran Stock Exchange</p>
+        <p>Tehran Stock Exchange • Interactive Visualization</p>
       </div>
     </div>
     <div class="header-actions">
       <button class="btn" id="exportBtn">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-        Export
+        Export SVG
       </button>
       <button class="btn btn-primary" id="fullscreenBtn">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
@@ -748,7 +802,7 @@
           </div>
         </div>
         <div class="toolbar-group">
-          <button class="btn btn-icon" id="resetBtn" title="Reset">
+          <button class="btn btn-icon" id="resetBtn" title="Reset View">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           </button>
           <button class="btn btn-icon" id="playBtn" title="Restart Layout">
@@ -762,15 +816,15 @@
       <svg id="network"></svg>
 
       <div class="zoom-controls">
-        <button class="zoom-btn" id="zoomIn">+</button>
-        <button class="zoom-btn" id="zoomOut">−</button>
-        <button class="zoom-btn" id="zoomFit">⊡</button>
+        <button class="zoom-btn" id="zoomIn" title="Zoom In">+</button>
+        <button class="zoom-btn" id="zoomOut" title="Zoom Out">−</button>
+        <button class="zoom-btn" id="zoomFit" title="Fit to View">⊡</button>
       </div>
 
       <div class="node-panel" id="nodePanel">
         <div class="node-panel-header">
           <div>
-            <div class="node-panel-title" id="panelTitle">Firm</div>
+            <div class="node-panel-title" id="panelTitle">Firm Name</div>
             <div class="node-panel-subtitle" id="panelSubtitle">Sector</div>
           </div>
           <button class="node-panel-close" id="panelClose">✕</button>
@@ -783,7 +837,7 @@
 
       <div class="loading" id="loading">
         <div class="spinner"></div>
-        <div class="loading-text">Loading network...</div>
+        <div class="loading-text">Loading network data...</div>
       </div>
     </section>
 
@@ -792,7 +846,7 @@
         <div class="card-header">
           <h3>
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-            Statistics
+            Network Statistics
           </h3>
         </div>
         <div class="card-body">
@@ -839,15 +893,15 @@
         <div class="card-body">
           <div class="help-item">
             <div class="help-icon">🖱️</div>
-            <div class="help-text"><strong>Drag</strong> nodes to move</div>
+            <div class="help-text"><strong>Drag</strong> nodes to reposition</div>
           </div>
           <div class="help-item">
             <div class="help-icon">🔍</div>
-            <div class="help-text"><strong>Scroll</strong> to zoom</div>
+            <div class="help-text"><strong>Scroll</strong> to zoom in/out</div>
           </div>
           <div class="help-item">
             <div class="help-icon">👆</div>
-            <div class="help-text"><strong>Click</strong> for details</div>
+            <div class="help-text"><strong>Click</strong> node for details</div>
           </div>
         </div>
       </div>
@@ -875,7 +929,7 @@
     const fmt = (v, d = 3) => v != null && isFinite(v) ? v.toFixed(d) : '—';
     const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 
-    // Centrality computation (optimized)
+    // Centrality computation (optimized with typed arrays)
     function computeCentralities(nodes, links) {
       const n = nodes.length;
       if (!n) return;
@@ -883,7 +937,7 @@
       const idMap = new Map(nodes.map((node, i) => [node.id, i]));
       const getIdx = ref => typeof ref === 'object' ? idMap.get(ref.id) : idMap.get(ref);
 
-      // Adjacency
+      // Build adjacency list
       const adj = Array.from({ length: n }, () => []);
       links.forEach(l => {
         const u = getIdx(l.source), v = getIdx(l.target);
@@ -893,10 +947,10 @@
         }
       });
 
-      // Degree
+      // Degree centrality
       const degree = adj.map(a => a.length);
 
-      // Closeness & Betweenness (combined BFS)
+      // Closeness & Betweenness (combined BFS for efficiency)
       const closeness = new Float32Array(n);
       const betweenness = new Float32Array(n);
 
@@ -942,7 +996,7 @@
         }
       }
 
-      // Eigenvector (power iteration)
+      // Eigenvector centrality (power iteration)
       let eigen = new Float32Array(n).fill(1 / n);
       for (let iter = 0; iter < 50; iter++) {
         const next = new Float32Array(n);
@@ -958,7 +1012,7 @@
         if (diff < 1e-6) break;
       }
 
-      // Normalize and assign
+      // Normalize and assign to nodes
       const maxD = Math.max(...degree, 1);
       const maxC = Math.max(...closeness, 0.001);
       const maxB = Math.max(...betweenness, 0.001);
@@ -979,7 +1033,7 @@
       });
     }
 
-    // Tooltip
+    // Tooltip functions
     function showTooltip(e, html) {
       tooltip.innerHTML = html;
       tooltip.style.opacity = 1;
@@ -999,12 +1053,12 @@
       tooltip.style.opacity = 0;
     }
 
-    // Node Panel
+    // Node Panel functions
     function showPanel(d) {
       selectedNode = d;
       nodePanel.classList.add('visible');
       $('panelTitle').textContent = d.label || d.id;
-      $('panelSubtitle').textContent = d.sector || 'Unknown';
+      $('panelSubtitle').textContent = d.sector || 'Unknown Sector';
 
       const c = d.centrality || {};
       $('metricsContainer').innerHTML = [
@@ -1039,16 +1093,28 @@
       const idx = data.nodes.indexOf(d);
 
       g.selectAll('.node circle')
-        .attr('opacity', n => data.nodes.indexOf(n) === idx || neighbors.has(data.nodes.indexOf(n)) ? 1 : 0.12);
+        .transition().duration(150)
+        .attr('opacity', n => data.nodes.indexOf(n) === idx || neighbors.has(data.nodes.indexOf(n)) ? 1 : 0.15)
+        .attr('stroke-width', n => n === d ? 3 : 1.5);
+
       g.selectAll('.link')
-        .attr('opacity', l => data.nodes.indexOf(l.source) === idx || data.nodes.indexOf(l.target) === idx ? 0.8 : 0.03)
-        .attr('stroke', l => data.nodes.indexOf(l.source) === idx || data.nodes.indexOf(l.target) === idx ? '#6366f1' : '#52525b');
+        .transition().duration(150)
+        .attr('opacity', l => data.nodes.indexOf(l.source) === idx || data.nodes.indexOf(l.target) === idx ? 1 : 0.08)
+        .attr('stroke', l => data.nodes.indexOf(l.source) === idx || data.nodes.indexOf(l.target) === idx ? '#6366f1' : '#94a3b8')
+        .attr('stroke-width', l => data.nodes.indexOf(l.source) === idx || data.nodes.indexOf(l.target) === idx ? 3 : 1.5);
     }
 
     function resetHighlight() {
       if (!g) return;
-      g.selectAll('.node circle').attr('opacity', 1);
-      g.selectAll('.link').attr('opacity', 0.4).attr('stroke', '#52525b');
+      g.selectAll('.node circle')
+        .transition().duration(150)
+        .attr('opacity', 1)
+        .attr('stroke-width', 1.5);
+      g.selectAll('.link')
+        .transition().duration(150)
+        .attr('opacity', 0.7)
+        .attr('stroke', '#64748b')
+        .attr('stroke-width', d => 1.5 + Math.sqrt(d.weight || 1) * 0.5);
     }
 
     // Legend
@@ -1088,10 +1154,14 @@
     }
 
     function highlightSector(sector) {
-      g.selectAll('.node circle').attr('opacity', n => (n.sector || 'Unknown') === sector ? 1 : 0.12);
-      g.selectAll('.link').attr('opacity', l => 
-        (l.source.sector || 'Unknown') === sector || (l.target.sector || 'Unknown') === sector ? 0.4 : 0.03
-      );
+      g.selectAll('.node circle')
+        .transition().duration(150)
+        .attr('opacity', n => (n.sector || 'Unknown') === sector ? 1 : 0.12);
+      g.selectAll('.link')
+        .transition().duration(150)
+        .attr('opacity', l => 
+          (l.source.sector || 'Unknown') === sector || (l.target.sector || 'Unknown') === sector ? 0.7 : 0.05
+        );
     }
 
     // Search
@@ -1099,13 +1169,15 @@
       const term = e.target.value.toLowerCase();
       if (!term) return resetHighlight();
       
-      g.selectAll('.node circle').attr('opacity', n => 
-        (n.label || n.id || '').toLowerCase().includes(term) ? 1 : 0.12
-      );
-      g.selectAll('.link').attr('opacity', 0.05);
+      g.selectAll('.node circle')
+        .transition().duration(150)
+        .attr('opacity', n => (n.label || n.id || '').toLowerCase().includes(term) ? 1 : 0.12);
+      g.selectAll('.link')
+        .transition().duration(150)
+        .attr('opacity', 0.08);
     }, 150));
 
-    // Load data
+    // Load data for year
     function loadYear(yr) {
       year = yr;
       hideTooltip();
@@ -1126,7 +1198,7 @@
           data = d;
           loading.style.display = 'none';
 
-          // Stats
+          // Update stats
           const n = d.nodes.length, l = d.links.length;
           $('statNodes').textContent = n;
           $('statLinks').textContent = l;
@@ -1137,13 +1209,13 @@
           renderNetwork();
         })
         .catch(err => {
-          loading.querySelector('.loading-text').textContent = 'Failed to load data';
+          loading.querySelector('.loading-text').textContent = 'Failed to load network data';
           loading.querySelector('.spinner').style.display = 'none';
           console.error(err);
         });
     }
 
-    // Render
+    // Render network visualization
     function renderNetwork() {
       const container = document.querySelector('.main');
       const width = container.clientWidth;
@@ -1154,54 +1226,77 @@
         .attr('width', '100%')
         .attr('height', '100%');
 
-      // Size scale
+      // Node size scale based on degree
       const getSize = d => d.centrality?.degree ?? 5;
       const sizes = data.nodes.map(getSize);
       const rScale = d3.scaleSqrt()
         .domain([Math.min(...sizes), Math.max(...sizes)])
-        .range([3, 20]);
+        .range([4, 22]);
+
+      // Link width scale based on weight
+      const weights = data.links.map(l => l.weight || 1);
+      const linkScale = d3.scaleLinear()
+        .domain([Math.min(...weights), Math.max(...weights)])
+        .range([1.5, 5]);
 
       g = svg.append('g');
 
-      // Links
+      // LINKS - More visible with better styling
       const links = g.append('g')
+        .attr('class', 'links')
         .selectAll('line')
         .data(data.links)
         .join('line')
         .attr('class', 'link')
-        .attr('stroke', '#52525b')
-        .attr('stroke-opacity', 0.4)
-        .attr('stroke-width', d => Math.sqrt(d.weight || 1));
+        .attr('stroke', '#64748b')
+        .attr('stroke-opacity', 0.7)
+        .attr('stroke-width', d => linkScale(d.weight || 1))
+        .attr('stroke-linecap', 'round');
 
-      // Nodes
+      // NODES
       const nodes = g.append('g')
+        .attr('class', 'nodes')
         .selectAll('g')
         .data(data.nodes)
         .join('g')
         .attr('class', 'node')
         .call(d3.drag()
-          .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
-          .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
-          .on('end', (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
+          .on('start', (e, d) => { 
+            if (!e.active) sim.alphaTarget(0.3).restart(); 
+            d.fx = d.x; 
+            d.fy = d.y; 
+          })
+          .on('drag', (e, d) => { 
+            d.fx = e.x; 
+            d.fy = e.y; 
+          })
+          .on('end', (e, d) => { 
+            if (!e.active) sim.alphaTarget(0); 
+            d.fx = null; 
+            d.fy = null; 
+          }));
 
+      // Node circles with better visibility
       nodes.append('circle')
         .attr('r', d => rScale(getSize(d)))
         .attr('fill', d => d.color || '#6366f1')
-        .attr('stroke', 'rgba(255,255,255,0.15)')
+        .attr('stroke', '#ffffff')
         .attr('stroke-width', 1.5)
-        .style('cursor', 'pointer');
+        .style('cursor', 'pointer')
+        .style('filter', 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))');
 
       // Labels (visible on zoom)
       const labels = nodes.append('text')
         .text(d => d.label || d.id)
         .attr('x', d => rScale(getSize(d)) + 6)
-        .attr('y', 3)
-        .attr('font-size', 10)
-        .attr('fill', 'rgba(255,255,255,0.7)')
+        .attr('y', 4)
+        .attr('font-size', 11)
+        .attr('font-weight', 500)
+        .attr('fill', '#334155')
         .attr('opacity', 0)
         .style('pointer-events', 'none');
 
-      // Zoom
+      // Zoom behavior
       zoom = d3.zoom()
         .scaleExtent([0.1, 8])
         .on('zoom', e => {
@@ -1211,13 +1306,14 @@
 
       svg.call(zoom);
 
-      // Events
+      // Node interactions
       nodes
         .on('mouseenter', (e, d) => {
           const c = d.centrality || {};
           showTooltip(e, `
             <div class="tooltip-type">Firm</div>
             <div class="tooltip-title">${d.label || d.id}</div>
+            <div class="tooltip-row"><span class="tooltip-label">Sector</span><span class="tooltip-value">${d.sector || 'Unknown'}</span></div>
             <div class="tooltip-row"><span class="tooltip-label">Degree</span><span class="tooltip-value">${c.degree ?? '—'}</span></div>
             <div class="tooltip-row"><span class="tooltip-label">Closeness</span><span class="tooltip-value">${fmt(c.closeness)}</span></div>
             <div class="tooltip-row"><span class="tooltip-label">Betweenness</span><span class="tooltip-value">${fmt(c.betweenness)}</span></div>
@@ -1225,27 +1321,41 @@
         })
         .on('mousemove', positionTooltip)
         .on('mouseleave', hideTooltip)
-        .on('click', (e, d) => { e.stopPropagation(); hideTooltip(); showPanel(d); });
+        .on('click', (e, d) => { 
+          e.stopPropagation(); 
+          hideTooltip(); 
+          showPanel(d); 
+        });
 
+      // Link interactions
       links
         .on('mouseenter', (e, d) => {
           showTooltip(e, `
-            <div class="tooltip-type">Interlock</div>
+            <div class="tooltip-type">Board Interlock</div>
             <div class="tooltip-title">${d.source.label || d.source.id} ↔ ${d.target.label || d.target.id}</div>
             <div class="tooltip-row"><span class="tooltip-label">Shared Directors</span><span class="tooltip-value">${d.weight || 1}</span></div>
           `);
+          // Highlight this link
+          d3.select(e.target)
+            .attr('stroke', '#6366f1')
+            .attr('stroke-width', linkScale(d.weight || 1) + 2);
         })
         .on('mousemove', positionTooltip)
-        .on('mouseleave', hideTooltip);
+        .on('mouseleave', (e, d) => {
+          hideTooltip();
+          d3.select(e.target)
+            .attr('stroke', '#64748b')
+            .attr('stroke-width', linkScale(d.weight || 1));
+        });
 
       svg.on('click', hidePanel);
 
-      // Simulation
+      // Force simulation
       sim = d3.forceSimulation(data.nodes)
-        .force('link', d3.forceLink(data.links).id(d => d.id).distance(50).strength(0.4))
-        .force('charge', d3.forceManyBody().strength(-80).distanceMax(300))
+        .force('link', d3.forceLink(data.links).id(d => d.id).distance(60).strength(0.4))
+        .force('charge', d3.forceManyBody().strength(-100).distanceMax(350))
         .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide().radius(d => rScale(getSize(d)) + 2))
+        .force('collision', d3.forceCollide().radius(d => rScale(getSize(d)) + 3))
         .velocityDecay(0.4)
         .alphaDecay(0.02);
 
@@ -1258,7 +1368,7 @@
         nodes.attr('transform', d => `translate(${d.x},${d.y})`);
       });
 
-      // Resize
+      // Resize handler
       const resize = debounce(() => {
         const w = container.clientWidth, h = container.clientHeight - 52;
         svg.attr('viewBox', `0 0 ${w} ${h}`);
@@ -1267,7 +1377,7 @@
       window.addEventListener('resize', resize);
     }
 
-    // Fit to view
+    // Fit network to view
     function fitView() {
       if (!data?.nodes.length) return;
       const container = document.querySelector('.main');
@@ -1281,7 +1391,7 @@
         if (d.y > maxY) maxY = d.y;
       });
 
-      const pad = 40;
+      const pad = 50;
       const scale = Math.min(width / (maxX - minX + pad * 2), height / (maxY - minY + pad * 2), 2) * 0.85;
       const tx = width / 2 - ((minX + maxX) / 2) * scale;
       const ty = height / 2 - ((minY + maxY) / 2) * scale;
@@ -1289,9 +1399,10 @@
       svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
     }
 
-    // Events
+    // Event listeners
     $('yearSelect').addEventListener('change', e => loadYear(e.target.value));
     $('panelClose').addEventListener('click', hidePanel);
+    
     $('resetBtn').addEventListener('click', () => {
       hidePanel();
       activeSector = null;
@@ -1300,23 +1411,30 @@
       resetHighlight();
       svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity);
     });
+    
     $('playBtn').addEventListener('click', () => sim?.alpha(1).restart());
     $('zoomIn').addEventListener('click', () => svg.transition().duration(200).call(zoom.scaleBy, 1.5));
     $('zoomOut').addEventListener('click', () => svg.transition().duration(200).call(zoom.scaleBy, 0.67));
     $('zoomFit').addEventListener('click', fitView);
+    
     $('fullscreenBtn').addEventListener('click', () => {
       document.fullscreenElement ? document.exitFullscreen() : document.querySelector('.main').requestFullscreen();
     });
+    
     $('exportBtn').addEventListener('click', () => {
       const svgEl = $('network');
-      const blob = new Blob([new XMLSerializer().serializeToString(svgEl)], { type: 'image/svg+xml' });
+      const serializer = new XMLSerializer();
+      let svgString = serializer.serializeToString(svgEl);
+      svgString = '<?xml version="1.0" encoding="UTF-8"?>\n' + svgString;
+      const blob = new Blob([svgString], { type: 'image/svg+xml' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `network_${year}.svg`;
+      link.download = `board_network_${year}.svg`;
       link.click();
+      URL.revokeObjectURL(link.href);
     });
 
-    // Init
+    // Initialize
     loadYear('2024');
   </script>
 </body>
