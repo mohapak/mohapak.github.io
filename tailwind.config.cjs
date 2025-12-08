@@ -1,3 +1,5 @@
+const defaultTheme = require('tailwindcss/defaultTheme');
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -10,6 +12,10 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', ...defaultTheme.fontFamily.sans],
+        display: ['"Source Serif 4"', ...defaultTheme.fontFamily.serif],
+      },
       transitionDuration: {
         '250': '250ms',
         '350': '350ms',
