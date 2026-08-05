@@ -374,16 +374,18 @@ const BoardNetworkGraph: React.FC<Props> = ({
       {/* Controls (stay outside the clipped frame so they aren’t cropped) */}
       <div className="absolute right-3 top-3 flex gap-2">
         <button
+          type="button"
           className="text-xs px-2 py-1 rounded bg-slate-900 text-white dark:bg-white dark:text-slate-900 hover:opacity-80 transition-opacity"
           onClick={handleReset}
           title="Reset view"
+          aria-label="Reset network view"
         >
           Reset
         </button>
       </div>
 
       {/* Errors live below the frame */}
-      {err && <div className="p-4 text-red-600 text-sm">{err}</div>}
+      {err && <div className="p-4 text-red-600 text-sm" role="alert">{err}</div>}
     </div>
   </div>
 );

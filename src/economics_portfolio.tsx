@@ -83,6 +83,11 @@ interface ModalProps {
 
 const Modal: React.FC<ModalProps> = ({ paper, onClose }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    closeButtonRef.current?.focus();
+  }, []);
 
   // Handle clicks outside modal
   useEffect(() => {
@@ -158,6 +163,7 @@ const Modal: React.FC<ModalProps> = ({ paper, onClose }) => {
         role="dialog"
         aria-modal="true"
         aria-labelledby="paper-title"
+        aria-describedby="paper-abstract"
       >
           <div className="sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-700 p-6 z-10">
             <div className="flex items-start justify-between gap-4">
@@ -170,6 +176,8 @@ const Modal: React.FC<ModalProps> = ({ paper, onClose }) => {
                 </div>
               </div>
               <button
+                ref={closeButtonRef}
+                type="button"
                 onClick={onClose}
                 aria-label="Close modal"
                 className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
@@ -183,7 +191,7 @@ const Modal: React.FC<ModalProps> = ({ paper, onClose }) => {
           <div className="p-6 space-y-6">
             <div>
               <h4 className="font-semibold text-slate-900 dark:text-white mb-2">Abstract</h4>
-              <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{paper.abstract}</p>
+              <p id="paper-abstract" className="text-slate-700 dark:text-slate-300 leading-relaxed">{paper.abstract}</p>
             </div>
 
             <div>
@@ -392,6 +400,10 @@ const EconomicsPortfolio: React.FC = () => {
     }, ms + 50);
   }, []);
 
+  useEffect(() => () => {
+    if (themeTimer.current) window.clearTimeout(themeTimer.current);
+  }, []);
+
   const scrollToSection = useCallback((e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
     const element = document.getElementById(id);
@@ -494,7 +506,6 @@ const EconomicsPortfolio: React.FC = () => {
       methodology: ["Network Analysis", "Panel Data", "System GMM"],
       keywords: ["Corporate Governance", "Board Networks", "Firm Performance", "Tehran Stock Exchange", "Emerging Markets"],
       software: ["Python", "Stata", "NetworkX"],
-      pdfLink: "/assets/board_of_directors_sample_eng.pdf",
       status_color: "amber"
     }
   ];
@@ -652,7 +663,8 @@ const EconomicsPortfolio: React.FC = () => {
               <a href="#cv" onClick={(e) => scrollToSection(e, 'cv')} className="text-sm hover:text-sky-600 transition-colors hidden md:block">CV</a>
               <a href="#contact" onClick={(e) => scrollToSection(e, 'contact')} className="text-sm hover:text-sky-600 transition-colors hidden md:block">Contact</a>
               <button
-                onClick={() => setIsDark(!isDark)}
+                type="button"
+                onClick={toggleThemeSmooth}
                 className="p-2 rounded-full transition-all duration-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
               >
@@ -690,7 +702,7 @@ const EconomicsPortfolio: React.FC = () => {
                     Email Me
                   </a>
                   <a 
-                    href="/assets/cv-1.pdf" 
+                    href="/assets/cv_main.pdf"
                     className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800"
                   >
                     <Download className="w-4 h-4" />
@@ -736,8 +748,9 @@ const EconomicsPortfolio: React.FC = () => {
                   onClick={() => setSelectedPaper(paper)}
                   role="button"
                   tabIndex={0}
-                  onKeyPress={(e) => {
+                  onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
                       setSelectedPaper(paper);
                     }
                   }}
@@ -782,7 +795,7 @@ const EconomicsPortfolio: React.FC = () => {
 
             <div className="mt-8 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
               <p className="text-sm text-slate-600 dark:text-slate-400 text-center">
-                💡 Click on any paper to view full abstract, methodology, and download options
+                Select a paper to view its full abstract and methodology.
               </p>
             </div>
           </AnimatedSection>
@@ -1009,7 +1022,7 @@ const EconomicsPortfolio: React.FC = () => {
                   <div className="rounded-2xl border border-slate-200 dark:border-slate-800 p-6 bg-white/90 dark:bg-slate-900/80">
                     <h3 className="font-semibold mb-3">Download CV</h3>
                     <a
-                      href="/assets/cv-1.pdf"
+                      href="/assets/cv_main.pdf"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg hover:opacity-90"
@@ -1083,6 +1096,7 @@ const EconomicsPortfolio: React.FC = () => {
           {/* Back to Top */}
           {showBackTop && (
             <button
+              type="button"
               onClick={scrollToTop}
               className="fixed bottom-6 right-6 p-3 rounded-full bg-sky-500 text-white shadow-lg hover:bg-sky-600 z-50 transition-all"
               aria-label="Back to top"
