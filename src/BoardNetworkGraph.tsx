@@ -23,18 +23,14 @@ interface Props {
   maxRadius?: number;
 }
 
-// --- sanitize inline tooltip styles so Tailwind colors apply
-const sanitizeTooltipHTML = (html: string) => {
-  if (!html) return '';
-  const cleaned = html.replace(/style="([^"]*)"/gi, (_m, styles: string) => {
-    const filtered = styles
-      .replace(/(^|;)\s*color\s*:[^;"]*;?/gi, '$1')
-      .replace(/(^|;)\s*background(-color)?\s*:[^;"]*;?/gi, '$1')
-      .trim()
-      .replace(/^;|;$/g, '');
-    return filtered ? `style="${filtered}"` : '';
-  });
-  return cleaned;
+const getNodeDescription = (node: NodeDatum) => {
+  const fallback = node.label ?? node.id;
+  if (!node.title) return fallback;
+
+  return node.title
+    .replace(/<br\s*\/?\s*>/gi, '\n')
+    .replace(/<[^>]*>/g, '')
+    .trim() || fallback;
 };
 
 const BoardNetworkGraph: React.FC<Props> = ({
@@ -50,6 +46,7 @@ const BoardNetworkGraph: React.FC<Props> = ({
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [accessibleNodes, setAccessibleNodes] = useState<NodeDatum[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -61,6 +58,7 @@ const BoardNetworkGraph: React.FC<Props> = ({
         if (!resp.ok) throw new Error(`Failed to load ${dataUrl}`);
         const data: GraphData = await resp.json();
         if (!isMounted) return;
+        setAccessibleNodes(data.nodes);
 
         const container = wrapRef.current!;
         const frame = frameRef.current!;                  // NEW: use frame for sizing/clipping
@@ -96,7 +94,7 @@ const BoardNetworkGraph: React.FC<Props> = ({
             'rounded-xl border px-3 py-2 text-xs shadow-lg backdrop-blur',
             'bg-white/95 text-slate-900 border-slate-200',
             'dark:bg-slate-900/95 dark:text-slate-100 dark:border-slate-700',
-            'text-right'
+            'text-right whitespace-pre-line'
           ].join(' '))
           .attr('dir', 'auto')
           .style('opacity', '0')
@@ -215,6 +213,9 @@ const BoardNetworkGraph: React.FC<Props> = ({
           .data(data.nodes)
           .join('g')
           .attr('class', 'node')
+          .attr('tabindex', 0)
+          .attr('role', 'img')
+          .attr('aria-label', d => getNodeDescription(d))
           .call(
             d3.drag<SVGGElement, NodeDatum>()
               .on('start', (event: D3DragEvent<SVGGElement, NodeDatum, unknown>, d) => {
@@ -232,6 +233,7 @@ const BoardNetworkGraph: React.FC<Props> = ({
                 d.fy = null;
               })
           );
+        node.append('title').text(d => getNodeDescription(d));
         node.append('circle')
           .attr('r', d => r(d.size ?? 8))
           .attr('fill', d => d.color ?? (isDark ? '#38BDF8' : '#0EA5E9'))
@@ -250,10 +252,18 @@ const BoardNetworkGraph: React.FC<Props> = ({
           .attr('stroke-width', 3);
 
         let raf = 0;
+        const showTooltip = (nodeDatum: NodeDatum, x: number, y: number) => {
+          tooltip
+            .text(getNodeDescription(nodeDatum))
+            .style('left', `${x}px`)
+            .style('top', `${y - 16}px`)
+            .style('opacity', '1');
+        };
+
         node
-          .on('mouseenter', (_event, d) => {
-            const html = d.title ? sanitizeTooltipHTML(d.title) : `<strong>${d.label ?? d.id}</strong>`;
-            tooltip.style('opacity', '1').html(html);
+          .on('mouseenter', (event, d) => {
+            const [x, y] = d3.pointer(event, container);
+            showTooltip(d, x, y);
           })
           .on('mousemove', (event) => {
             if (raf) return;
@@ -263,10 +273,12 @@ const BoardNetworkGraph: React.FC<Props> = ({
               raf = 0;
             });
           })
+          .on('focus', (_event, d) => showTooltip(d, width / 2, 48))
           .on('mouseleave', () => {
             if (raf) cancelAnimationFrame(raf), (raf = 0);
             tooltip.style('opacity', '0');
-          });
+          })
+          .on('blur', () => tooltip.style('opacity', '0'));
 
         // Simulation
         const sim = d3.forceSimulation<NodeDatum>(data.nodes)
@@ -386,6 +398,18 @@ const BoardNetworkGraph: React.FC<Props> = ({
 
       {/* Errors live below the frame */}
       {err && <div className="p-4 text-red-600 text-sm" role="alert">{err}</div>}
+      {!err && accessibleNodes.length > 0 && (
+        <details className="border-t border-slate-200 p-4 text-sm dark:border-slate-800">
+          <summary className="cursor-pointer font-medium text-slate-700 dark:text-slate-200">View network data as text</summary>
+          <ul className="mt-3 grid gap-3 md:grid-cols-2">
+            {accessibleNodes.map((node) => (
+              <li key={node.id} className="rounded-lg bg-slate-50 p-3 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200" dir="auto">
+                {getNodeDescription(node)}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
     </div>
   </div>
 );

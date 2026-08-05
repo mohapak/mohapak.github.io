@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   FileText, Download, ExternalLink, Award, Briefcase, GraduationCap, BookOpen,
-  Mail, Linkedin, Github, ChevronUp, Sun, Moon, X
+  Mail, Linkedin, Github, ChevronUp, Sun, Moon, Menu, X
 } from 'lucide-react';
 import { motion, useScroll, useSpring, AnimatePresence } from 'framer-motion';
 import BoardNetworkGraph from './BoardNetworkGraph';  // ← Add this line
@@ -45,6 +45,14 @@ const dotColor: Record<TimelineItem['color'], string> = {
   emerald: 'bg-emerald-500',
   purple:  'bg-purple-500',
 };
+
+const navigationLinks = [
+  { id: 'research', label: 'Research' },
+  { id: 'visualization', label: 'Network' },
+  { id: 'about', label: 'About' },
+  { id: 'cv', label: 'CV' },
+  { id: 'contact', label: 'Contact' },
+] as const;
 
 /* ---------- Micro components ---------- */
 const BackgroundFX: React.FC = () => (
@@ -236,56 +244,6 @@ const Modal: React.FC<ModalProps> = ({ paper, onClose }) => {
   );
 };
 
-const LoaderOverlay: React.FC<{ progress: number; reduceMotion?: boolean }> = ({ progress, reduceMotion }) => (
-  <motion.div
-    className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-50 dark:bg-slate-900"
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    transition={{ duration: reduceMotion ? 0 : 0.25 }}
-  >
-    {/* Optional gradient/noise layer if you have .bg-pattern */}
-    <div aria-hidden className="absolute inset-0 bg-pattern opacity-60 pointer-events-none" />
-
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -12 }}
-      transition={reduceMotion ? { duration: 0 } : { duration: 0.35, ease: 'easeOut' }}
-      className="relative flex flex-col items-center gap-6 px-6"
-    >
-      <div className="relative w-16 h-16">
-        <div className="absolute inset-0 rounded-full border-4 border-slate-200 dark:border-slate-800" />
-        {!reduceMotion && (
-          <div className="absolute inset-0 rounded-full border-4 border-transparent">
-            <div className="absolute inset-0 rounded-full border-4 border-sky-500 border-t-transparent animate-spin-slow" />
-          </div>
-        )}
-        {reduceMotion && (
-          <div className="absolute inset-0 grid place-items-center text-sm font-medium text-slate-500 dark:text-slate-300">
-            <span>{Math.round(progress)}%</span>
-          </div>
-        )}
-      </div>
-
-      <h1 className="text-base md:text-lg font-semibold text-slate-900 dark:text-white">
-        Loading Website…
-      </h1>
-
-      <div className="w-64 max-w-[80vw] h-2 rounded-full bg-slate-200/80 dark:bg-slate-800/80 overflow-hidden">
-        <motion.div
-          className="h-full bg-gradient-to-r from-sky-400 via-cyan-400 to-emerald-400"
-          initial={{ width: '0%' }}
-          animate={{ width: `${Math.round(progress)}%` }}
-          transition={reduceMotion ? { duration: 0 } : { duration: 0.2, ease: 'easeOut' }}
-        />
-      </div>
-
-      <div className="text-xs text-slate-500">{Math.round(progress)}%</div>
-    </motion.div>
-  </motion.div>
-);
-
 /* ---------- Main Component ---------- */
 const EconomicsPortfolio: React.FC = () => {
   const [isDark, setIsDark] = useState<boolean>(() => {
@@ -299,20 +257,9 @@ const EconomicsPortfolio: React.FC = () => {
     } catch { return false; }
   });
   const [showBackTop, setShowBackTop] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedPaper, setSelectedPaper] = useState<Paper | null>(null);
   const themeTimer = useRef<number | null>(null);
-  const [progress, setProgress] = useState(0);
-  const [isAppReady, setIsAppReady] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() => {
-    try {
-      return (
-        typeof window !== 'undefined' &&
-        window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches === true
-      );
-    } catch {
-      return false;
-    }
-  });
   
   /* Theme class on <html> */
   useEffect(() => {
@@ -330,32 +277,7 @@ const EconomicsPortfolio: React.FC = () => {
   }, [isDark]);
 
   useEffect(() => {
-    if (isAppReady) {
-      requestAnimationFrame(() => {
-        document.documentElement.classList.remove('no-transitions');
-      });
-    }
-  }, [isAppReady]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mq = window.matchMedia?.('(prefers-reduced-motion: reduce)');
-    if (!mq) return;
-
-    const update = (matches: boolean) => setPrefersReducedMotion(matches);
-    update(mq.matches);
-
-    const listener = (event: MediaQueryListEvent) => update(event.matches);
-
-    if (typeof mq.addEventListener === 'function') {
-      mq.addEventListener('change', listener);
-      return () => mq.removeEventListener('change', listener);
-    }
-
-    if (typeof mq.addListener === 'function') {
-      mq.addListener(listener);
-      return () => mq.removeListener(listener);
-    }
+    requestAnimationFrame(() => document.documentElement.classList.remove('no-transitions'));
   }, []);
 
   /* Hash deep-linking */
@@ -425,73 +347,6 @@ const EconomicsPortfolio: React.FC = () => {
       behavior: 'smooth'
     });
   }, []);
-
-  /* Smooth app loader */
-  useEffect(() => {
-    if (typeof document !== 'undefined' && document.readyState === 'complete') {
-      setProgress(100);
-      setIsAppReady(true);
-      return;
-    }
-
-    const reduceMotion = prefersReducedMotion;
-
-    let interval: number | null = null;
-    let onloadFired = document.readyState === 'complete';
-    let fontsReady = !('fonts' in document);
-    let minDelayDone = reduceMotion;
-
-    const MIN_DELAY = 600;
-    const HARD_TIMEOUT = 5000;
-
-    const clearAll = () => {
-      if (interval) window.clearInterval(interval);
-      window.removeEventListener('load', onLoad);
-      window.clearTimeout(minTimer);
-      window.clearTimeout(hardTimer);
-    };
-
-    const maybeFinish = () => {
-      if (onloadFired && fontsReady && minDelayDone) {
-        clearAll();
-        setProgress(100);
-        window.setTimeout(() => setIsAppReady(true), 200);
-      }
-    };
-
-    interval = window.setInterval(() => {
-      setProgress(p => Math.min(95, p + (reduceMotion ? 20 : (Math.random() * 7 + 3))));
-    }, reduceMotion ? 160 : 180);
-
-    try {
-      (document as any).fonts?.ready
-        ?.then(() => { fontsReady = true; maybeFinish(); })
-        ?.catch(() => { fontsReady = true; maybeFinish(); });
-    } catch {
-      fontsReady = true; 
-      maybeFinish();
-    }
-
-    const onLoad = () => { 
-      onloadFired = true; 
-      maybeFinish(); 
-    };
-    window.addEventListener('load', onLoad);
-
-    const minTimer = window.setTimeout(() => { 
-      minDelayDone = true; 
-      maybeFinish(); 
-    }, MIN_DELAY);
-
-    const hardTimer = window.setTimeout(() => {
-      onloadFired = true; 
-      fontsReady = true; 
-      minDelayDone = true; 
-      maybeFinish();
-    }, HARD_TIMEOUT);
-
-    return clearAll;
-  }, [prefersReducedMotion]);
 
   /* ---------- Data ---------- */
   const papers: Paper[] = [
@@ -599,51 +454,10 @@ const EconomicsPortfolio: React.FC = () => {
   };
   return (
     <>
-      {/* Structured Data - Hidden but crawlable with correct Schema.org format */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "Person",
-        "name": "Mohammad Mehdi Pakravan",
-        "url": "https://mohapak.github.io/",
-        "image": "https://mohapak.github.io/assets/images/my-pic-no.png",
-        "sameAs": [
-          "https://www.linkedin.com/in/mohammad-pakravan/",
-          "https://github.com/mohapak"
-        ],
-        "jobTitle": "Economist and Researcher",
-        "worksFor": {
-          "@type": "EducationalOrganization",
-          "name": "Sharif University of Technology"
-        },
-        "alumniOf": [
-          {
-            "@type": "EducationalOrganization",
-            "name": "Sharif University of Technology",
-            "sameAs": "https://en.wikipedia.org/wiki/Sharif_University_of_Technology"
-          },
-          {
-            "@type": "EducationalOrganization",
-            "name": "Isfahan University of Technology",
-            "sameAs": "https://en.wikipedia.org/wiki/Isfahan_University_of_Technology"
-          }
-        ],
-        "email": "pakravanmohammad.eco@gmail.com",
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "Isfahan",
-          "addressCountry": "Iran"
-        }
-      }) }} />
-      
       <div className="min-h-screen">
         {/* FX layers */}
         <BackgroundFX />
         <ScrollProgress />
-        
-        {/* Loader overlay */}
-        <AnimatePresence initial={false} mode="wait">
-          {!isAppReady && <LoaderOverlay progress={progress} reduceMotion={prefersReducedMotion} />}
-        </AnimatePresence>
         
         <div className="bg-slate-50/90 dark:bg-slate-900/90 text-slate-900 dark:text-slate-100">
         {/* Navigation */}
@@ -656,12 +470,12 @@ const EconomicsPortfolio: React.FC = () => {
             >
               Mohammad Mehdi Pakravan
             </a>
-            <div className="flex items-center gap-6">
-              <a href="#research" onClick={(e) => scrollToSection(e, 'research')} className="text-sm hover:text-sky-600 transition-colors hidden md:block">Research</a>
-              <a href="#visualization" onClick={(e) => scrollToSection(e, 'visualization')} className="text-sm hover:text-sky-600 transition-colors hidden md:block">Network</a>
-              <a href="#about" onClick={(e) => scrollToSection(e, 'about')} className="text-sm hover:text-sky-600 transition-colors hidden md:block">About</a>
-              <a href="#cv" onClick={(e) => scrollToSection(e, 'cv')} className="text-sm hover:text-sky-600 transition-colors hidden md:block">CV</a>
-              <a href="#contact" onClick={(e) => scrollToSection(e, 'contact')} className="text-sm hover:text-sky-600 transition-colors hidden md:block">Contact</a>
+            <div className="flex items-center gap-2 md:gap-6">
+              <div className="hidden items-center gap-6 md:flex">
+                {navigationLinks.map(({ id, label }) => (
+                  <a key={id} href={`#${id}`} onClick={(event) => scrollToSection(event, id)} className="text-sm hover:text-sky-600 transition-colors">{label}</a>
+                ))}
+              </div>
               <button
                 type="button"
                 onClick={toggleThemeSmooth}
@@ -672,8 +486,45 @@ const EconomicsPortfolio: React.FC = () => {
                   {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                 </div>
               </button>
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen((open) => !open)}
+                className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 md:hidden"
+                aria-label="Toggle navigation menu"
+                aria-controls="mobile-navigation"
+                aria-expanded={isMobileMenuOpen}
+              >
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
             </div>
           </div>
+          <AnimatePresence initial={false}>
+            {isMobileMenuOpen && (
+              <motion.div
+                id="mobile-navigation"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden border-t border-slate-200/70 dark:border-slate-800 md:hidden"
+              >
+                <div className="max-w-6xl mx-auto grid grid-cols-2 gap-1 px-4 py-3">
+                  {navigationLinks.map(({ id, label }) => (
+                    <a
+                      key={id}
+                      href={`#${id}`}
+                      onClick={(event) => {
+                        scrollToSection(event, id);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="rounded-lg px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
+                    >
+                      {label}
+                    </a>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </nav>
 
           {/* Hero */}
@@ -715,12 +566,11 @@ const EconomicsPortfolio: React.FC = () => {
                 <div className="relative">
                   <div className="aspect-square rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 shadow-2xl">
                     <img
-                      src="/assets/images/pic_aca_5.png"
-                      srcSet="/assets/images/pic_aca_5.png 1024w"
+                      src="/assets/images/pic_aca_5.jpg"
                       sizes="(min-width: 768px) 340px, 60vw"
                       alt="Mohammad Mehdi Pakravan"
-                      width={1024}
-                      height={1024}
+                      width={768}
+                      height={768}
                       className="w-full h-full object-cover"
                       loading="eager"
                       fetchPriority="high"
