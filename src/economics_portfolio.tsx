@@ -404,7 +404,7 @@ const EconomicsPortfolio: React.FC = () => {
       status: "In Progress (Journal Paper)",
       year: "2025",
       abstract:
-        "Investigates how board network structure affects firm performance using comprehensive data from Tehran Stock Exchange (2016-2024). Employs network centrality measures and dynamic panel methods to identify causal effects, finding that director connections improve performance primarily in firms with dispersed ownership. Provides new evidence on corporate governance mechanisms in emerging markets.",
+        "This paper examines how the network structure of boards of directors affects firm performance, using comprehensive data on the Tehran Stock Exchange from 2016 to 2024. I measure directors' network centrality and apply dynamic panel methods to identify causal effects. The results show that director connections improve firm performance primarily in firms with dispersed ownership, providing new evidence on corporate governance mechanisms in emerging markets.",
       methodology: ["Network Analysis", "Panel Data", "System GMM"],
       keywords: ["Corporate Governance", "Board Networks", "Firm Performance", "Tehran Stock Exchange", "Emerging Markets"],
       software: ["Python", "Stata", "NetworkX"],
@@ -428,7 +428,7 @@ const EconomicsPortfolio: React.FC = () => {
           color: "sky"
         },
         {
-          title: "B.Sc. in Electrical Engineering(Control)",
+          title: "B.Sc. in Electrical Engineering (Control)",
           institution: "Isfahan University of Technology",
           period: "Oct 2017 – Sep 2021",
           details: [
@@ -460,7 +460,7 @@ const EconomicsPortfolio: React.FC = () => {
       category: "Teaching Experience",
       items: [
         {
-          title: "Teaching Assistant - Introductory Econometrics(Undergraduate)",
+          title: "Teaching Assistant - Introductory Econometrics (Undergraduate)",
           institution: "Sharif University of Technology",
           period: "Spring 2025",
           details: [
@@ -578,10 +578,10 @@ const EconomicsPortfolio: React.FC = () => {
           <AnimatedSection id="home" className="scroll-mt-24 max-w-6xl mx-auto px-4 py-16 md:py-24">
             <div className="grid md:grid-cols-12 gap-8 items-center">
               <div className="md:col-span-7">
-                <p className="text-xs uppercase tracking-widest text-slate-500">Interested in Economics</p>
+                <p className="text-xs uppercase tracking-widest text-slate-500">Economist — Corporate Governance &amp; Network Analysis</p>
                 <h1 className="mt-3 text-4xl md:text-6xl font-extrabold leading-tight">Mohammad Mehdi Pakravan</h1>
                 <p className="mt-4 text-lg text-slate-600 dark:text-slate-300 max-w-2xl">
-                  M.Sc. in Economics from Sharif University of Technology, specializing in Industrial Organizations, Corporate Governance, Network Analysis, and Applied Econometrics. Currently working on board of directors networks and firm performance in emerging markets.
+                  I study how the relationships between corporate decision-makers shape what firms can do. My current research builds annual board networks for the Tehran Stock Exchange (2016–2024) and asks whether well-connected boards help the firms they govern. I hold an M.Sc. in Economics from Sharif University of Technology, specializing in industrial organization, corporate governance, network analysis, and applied econometrics.
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <a 
@@ -787,10 +787,10 @@ const EconomicsPortfolio: React.FC = () => {
                   I recently completed my Master's degree in Economics at Sharif University of Technology, where I specialized in corporate governance and network analysis. My thesis examines how board of directors' network structures influence firm performance in the Tehran Stock Exchange.
                 </p>
                 <p>
-                  My research interests lie at the intersection of corporate finance, network economics, and applied econometrics. I am particularly interested in understanding how social networks and relationships between corporate decision-makers affect economic outcomes in emerging markets.
+                  I treat the board of directors as a network: I measure how directors are connected across the Tehran Stock Exchange (2016–2024) and test how those connections shape firm performance. The pattern I find is that director connections improve performance primarily in firms with dispersed ownership.
                 </p>
                 <p>
-                  I am currently preparing my thesis for journal publication and exploring opportunities for PhD studies in Economics, Finance, or related fields.
+                  Right now, I am preparing the thesis for journal submission and looking for a PhD position in Economics, Finance, or a related field.
                 </p>
                 <p className="pt-4 border-t border-slate-200 dark:border-slate-700">
                   <strong>Technical Skills:</strong> Python, Stata, EViews, R<br />
@@ -931,7 +931,7 @@ const EconomicsPortfolio: React.FC = () => {
             <div className="mt-6 grid md:grid-cols-12 gap-8 items-center">
               <div className="md:col-span-7 space-y-3 text-slate-700 dark:text-slate-300">
                 <p>
-                  I am actively seeking PhD opportunities in Economics, Finance, or related fields. Feel free to reach out for research collaboration or academic discussions.
+                  I am actively seeking PhD opportunities in Economics, Finance, or related fields. If you work on corporate governance, board networks, or emerging markets — or would like to discuss research along those lines — I would be glad to hear from you.
                 </p>
                 <p className="flex items-center gap-2">
                   <Mail className="w-4 h-4 text-sky-500" aria-hidden="true" />
