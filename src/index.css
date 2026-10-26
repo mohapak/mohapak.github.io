@@ -119,3 +119,26 @@
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
+
+/* Reliability: content must render even when scroll-triggered animations never
+   fire (printing, full-page screenshots, crawler rendering). */
+@media print {
+  *,
+  *::before,
+  *::after {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Reduced motion: never hide content behind entrance animations. */
+@media (prefers-reduced-motion: reduce) {
+  section,
+  section * {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
