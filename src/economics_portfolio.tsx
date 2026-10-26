@@ -3,7 +3,7 @@ import {
   FileText, Download, ExternalLink, Award, Briefcase, GraduationCap, BookOpen,
   Mail, Linkedin, Github, ChevronUp, Sun, Moon, Menu, X
 } from 'lucide-react';
-import { motion, useScroll, useSpring, AnimatePresence } from 'framer-motion';
+import { motion, useReducedMotion, useScroll, useSpring, AnimatePresence } from 'framer-motion';
 import BoardNetworkGraph from './BoardNetworkGraph';  // ← Add this line
 
 /* ---------- Types ---------- */
@@ -70,18 +70,65 @@ const ScrollProgress: React.FC = () => {
   );
 };
 
-const AnimatedSection: React.FC<{ id?: string; className?: string; children: React.ReactNode }> = ({ id, className, children }) => (
-  <motion.section
-    id={id}
-    className={className}
-    initial={{ opacity: 0, y: 28 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: '-100px' }}
-    transition={{ duration: 0.6, ease: 'easeOut' }}
-  >
-    {children}
-  </motion.section>
-);
+/*
+ * Section entrance animation, made reliable.
+ *
+ * Content is NEVER allowed to stay hidden just because a scroll event /
+ * IntersectionObserver never fired. The hidden state lasts at most
+ * REVEAL_FAILSAFE_MS after mount, and is skipped entirely when the user
+ * prefers reduced motion or IntersectionObserver is unavailable (printing,
+ * full-page screenshots, crawler rendering, old browsers).
+ */
+const REVEAL_FAILSAFE_MS = 1500;
+
+const AnimatedSection: React.FC<{ id?: string; className?: string; children: React.ReactNode }> = ({ id, className, children }) => {
+  const ref = useRef<HTMLElement | null>(null);
+  const reduceMotion = useReducedMotion();
+  const [revealed, setRevealed] = useState(false);
+
+  useEffect(() => {
+    if (reduceMotion) {
+      setRevealed(true);
+      return;
+    }
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setRevealed(true);
+      return;
+    }
+    // Failsafe: reveal even if the section never enters the viewport.
+    const failsafe = window.setTimeout(() => setRevealed(true), REVEAL_FAILSAFE_MS);
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setRevealed(true);
+          io.disconnect();
+          window.clearTimeout(failsafe);
+        }
+      },
+      { rootMargin: '0px 0px -80px 0px' }
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      window.clearTimeout(failsafe);
+    };
+  }, [reduceMotion]);
+
+  const hidden = !revealed && !reduceMotion;
+  return (
+    <motion.section
+      ref={ref}
+      id={id}
+      className={className}
+      initial={false}
+      animate={hidden ? { opacity: 0, y: 28 } : { opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
+    >
+      {children}
+    </motion.section>
+  );
+};
 
 /* ---------- Modal Component (moved outside main component) ---------- */
 interface ModalProps {
@@ -776,12 +823,8 @@ const EconomicsPortfolio: React.FC = () => {
                 "Data Analysis & Visualization": ["Network Analysis (NetworkX, igraph)", "Data Cleaning & Wrangling", "Statistical Modeling", "Visualization (Matplotlib, Seaborn)"],
                 "Research Methods": ["Panel Data Analysis", "Time Series Analysis", "Social Network Analysis", "Causal Inference (DID, IV)"]
               }).map(([category, items]) => (
-                <motion.div
+                <div
                   key={category}
-                  initial={{ opacity: 0, y: 14 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.45, ease: 'easeOut' }}
                   className="rounded-2xl border border-slate-200 dark:border-slate-800 p-6 bg-white/90 dark:bg-slate-900/80"
                 >
                   <h3 className="font-semibold text-slate-900 dark:text-white">{category}</h3>
@@ -793,7 +836,7 @@ const EconomicsPortfolio: React.FC = () => {
                       </li>
                     ))}
                   </ul>
-                </motion.div>
+                </div>
               ))}
             </div>
           </AnimatedSection>
@@ -816,12 +859,8 @@ const EconomicsPortfolio: React.FC = () => {
                       {section.items.map((item, i) => {
                         const Icon = item.icon;
                         return (
-                          <motion.div
+                          <div
                             key={i}
-                            initial={{ opacity: 0, x: -10 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.35, ease: 'easeOut' }}
                             className="relative"
                           >
                             <div className={`absolute -left-[1.875rem] w-9 h-9 rounded-full ${dotColor[item.color]} flex items-center justify-center`}>
@@ -842,7 +881,7 @@ const EconomicsPortfolio: React.FC = () => {
                                 </ul>
                               )}
                             </div>
-                          </motion.div>
+                          </div>
                         );
                       })}
                     </div>
