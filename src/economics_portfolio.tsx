@@ -3,12 +3,8 @@ import {
   ArrowRight, ArrowUpRight, Download, Mail, Linkedin, Github, ChevronUp, Sun, Moon, Menu, X,
 } from 'lucide-react';
 import { motion, useReducedMotion, useScroll, useSpring, AnimatePresence } from 'framer-motion';
-<<<<<<< HEAD
-import BoardNetworkGraph from './BoardNetworkGraph';  // ← Add this line
-=======
 import BoardNetworkGraph from './BoardNetworkGraph';
 import HeroNetwork from './HeroNetwork';
->>>>>>> 3255076 (	modified:   index.html)
 
 /* ---------- Types ---------- */
 type Paper = {
@@ -126,67 +122,6 @@ const ScrollProgress: React.FC = () => {
   );
 };
 
-<<<<<<< HEAD
-/*
- * Section entrance animation, made reliable.
- *
- * Content is NEVER allowed to stay hidden just because a scroll event /
- * IntersectionObserver never fired. The hidden state lasts at most
- * REVEAL_FAILSAFE_MS after mount, and is skipped entirely when the user
- * prefers reduced motion or IntersectionObserver is unavailable (printing,
- * full-page screenshots, crawler rendering, old browsers).
- */
-const REVEAL_FAILSAFE_MS = 1500;
-
-const AnimatedSection: React.FC<{ id?: string; className?: string; children: React.ReactNode }> = ({ id, className, children }) => {
-  const ref = useRef<HTMLElement | null>(null);
-  const reduceMotion = useReducedMotion();
-  const [revealed, setRevealed] = useState(false);
-
-  useEffect(() => {
-    if (reduceMotion) {
-      setRevealed(true);
-      return;
-    }
-    const el = ref.current;
-    if (!el || typeof IntersectionObserver === 'undefined') {
-      setRevealed(true);
-      return;
-    }
-    // Failsafe: reveal even if the section never enters the viewport.
-    const failsafe = window.setTimeout(() => setRevealed(true), REVEAL_FAILSAFE_MS);
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setRevealed(true);
-          io.disconnect();
-          window.clearTimeout(failsafe);
-        }
-      },
-      { rootMargin: '0px 0px -80px 0px' }
-    );
-    io.observe(el);
-    return () => {
-      io.disconnect();
-      window.clearTimeout(failsafe);
-    };
-  }, [reduceMotion]);
-
-  const hidden = !revealed && !reduceMotion;
-  return (
-    <motion.section
-      ref={ref}
-      id={id}
-      className={className}
-      initial={false}
-      animate={hidden ? { opacity: 0, y: 28 } : { opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: 'easeOut' }}
-    >
-      {children}
-    </motion.section>
-  );
-};
-=======
 /** Masked line rise for the hero headline */
 const HeadLine: React.FC<{ i: number; children: React.ReactNode; reduce: boolean | null }> = ({ i, children, reduce }) => (
   <span className="block overflow-hidden pb-[0.1em] pr-[0.12em] -mb-[0.1em] lg:whitespace-nowrap">
@@ -200,7 +135,6 @@ const HeadLine: React.FC<{ i: number; children: React.ReactNode; reduce: boolean
     </motion.span>
   </span>
 );
->>>>>>> 3255076 (	modified:   index.html)
 
 const SectionHead: React.FC<{
   index: string;
@@ -872,34 +806,6 @@ const EconomicsPortfolio: React.FC = () => {
                   </div>
                 </div>
 
-<<<<<<< HEAD
-          {/* Skills */}
-          <AnimatedSection id="skills" className="scroll-mt-24 max-w-6xl mx-auto px-4 py-12 md:py-16">
-            <h2 className="text-2xl md:text-3xl font-bold">Technical Skills</h2>
-            <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
-              {Object.entries({
-                "Econometric Software": ["Stata (Advanced)", "Python (Pandas, NumPy, Statsmodels)", "R (Basic)", "EViews"],
-                "Data Analysis & Visualization": ["Network Analysis (NetworkX, igraph)", "Data Cleaning & Wrangling", "Statistical Modeling", "Visualization (Matplotlib, Seaborn)"],
-                "Research Methods": ["Panel Data Analysis", "Time Series Analysis", "Social Network Analysis", "Causal Inference (DID, IV)"]
-              }).map(([category, items]) => (
-                <div
-                  key={category}
-                  className="rounded-2xl border border-slate-200 dark:border-slate-800 p-6 bg-white/90 dark:bg-slate-900/80"
-                >
-                  <h3 className="font-semibold text-slate-900 dark:text-white">{category}</h3>
-                  <ul className="mt-3 space-y-2 text-slate-700 dark:text-slate-300">
-                    {(items as string[]).map((item, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="text-sky-500 mt-1">•</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </AnimatedSection>
-=======
                 <div className="flex flex-col justify-between gap-10 lg:col-span-5 lg:border-l lg:pl-12 hairline">
                   <figure>
                     <p className="label">Key finding</p>
@@ -926,7 +832,6 @@ const EconomicsPortfolio: React.FC = () => {
             </Reveal>
           </div>
         </section>
->>>>>>> 3255076 (	modified:   index.html)
 
         {/* ------------------------------ Network ------------------------------ */}
         <section
@@ -1007,46 +912,6 @@ const EconomicsPortfolio: React.FC = () => {
             <Reveal delay={0.1} className="mt-10">
               <div className="grid gap-8 border-t hairline pt-8 text-[14px] md:grid-cols-3 md:gap-12">
                 {[
-<<<<<<< HEAD
-                  ...timeline
-                ].map((section, idx) => (
-                  <div key={idx} className="mb-8">
-                    <div className="sticky top-20 z-10 mb-4 py-2 px-4 -ml-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur rounded-full inline-block">
-                      <h3 className="text-sm font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-wide">
-                        {section.category}
-                      </h3>
-                    </div>
-                    <div className="space-y-6 border-l-2 border-slate-200 dark:border-slate-700 pl-6 ml-2">
-                      {section.items.map((item, i) => {
-                        const Icon = item.icon;
-                        return (
-                          <div
-                            key={i}
-                            className="relative"
-                          >
-                            <div className={`absolute -left-[1.875rem] w-9 h-9 rounded-full ${dotColor[item.color]} flex items-center justify-center`}>
-                              <Icon className="w-5 h-5 text-white" />
-                            </div>
-                            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 p-4">
-                              <h4 className="font-semibold text-slate-900 dark:text-white">{item.title}</h4>
-                              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{item.institution}</p>
-                              <p className="text-xs text-slate-500 mt-1">{item.period}</p>
-                              {item.details && (
-                                <ul className="mt-3 space-y-1 text-sm text-slate-700 dark:text-slate-300">
-                                  {item.details.map((detail, j) => (
-                                    <li key={j} className="flex items-start gap-2">
-                                      <span className="text-sky-500 mt-1">•</span>
-                                      <span>{detail}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-=======
                   ['Explore', 'Drag nodes to reposition, scroll to zoom, hover a firm to isolate its neighbours and read its details.'],
                   ['Read the graph', 'Node size shows board connections, line weight shows shared directors, and colour marks firm category.'],
                   ['Source', 'Tehran Stock Exchange board composition data, with network analysis metrics computed per year.'],
@@ -1054,7 +919,6 @@ const EconomicsPortfolio: React.FC = () => {
                   <div key={k}>
                     <p className="label">{k}</p>
                     <p className="mt-3 max-w-[30ch] leading-[1.6] text-fg/65">{v}</p>
->>>>>>> 3255076 (	modified:   index.html)
                   </div>
                 ))}
               </div>
