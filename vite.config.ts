@@ -1,11 +1,13 @@
 // vite.config.ts
 import { defineConfig } from 'vite'
+import { fileURLToPath } from 'node:url'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   // For user/organization pages (mohapak.github.io) keep this as "/".
   // If you ever move to a project page, change to "/your-repo-name/".
   base: '/',
+  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
 
   plugins: [
     react()
