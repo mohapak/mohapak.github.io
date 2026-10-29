@@ -477,8 +477,8 @@ const EconomicsPortfolio: React.FC = () => {
         },
         {
           title: 'Merit-based full-tuition scholarship',
-          institution: 'Sharif University of Technology',
-          period: 'Sep 2022 – Mar 2025',
+          institution: 'Sharif University of Technology & Isfahan University of Technology',
+          period: 'Oct 2017 – Mar 2025',
         },
       ],
     },
