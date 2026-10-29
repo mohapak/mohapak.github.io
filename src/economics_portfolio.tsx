@@ -740,9 +740,9 @@ const EconomicsPortfolio: React.FC = () => {
               className="grid border-t hairline pt-6 sm:grid-cols-3 sm:pt-7 [&>div]:py-3 sm:[&>div]:py-0"
             >
               {[
-                ['Top 0.4%', 'Iranian National Graduate Entrance Exam, rank 22 of 5,000'],
-                ['2016–2024', 'Tehran Stock Exchange board data behind the thesis'],
-                ["M.Sc. ’25", 'Economics, Sharif University of Technology'],
+                ['Top 0.4%', 'Ranked 22nd of 5,000 in Iran’s National Graduate Entrance Exam'],
+                ['9 years', 'of Tehran Stock Exchange board data (2016–2024) behind my thesis'],
+                ['M.Sc. Economics', 'Sharif University of Technology, 2022–2025'],
               ].map(([k, v], i) => (
                 <div
                   key={k}
