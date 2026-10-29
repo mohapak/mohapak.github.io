@@ -724,7 +724,7 @@ const EconomicsPortfolio: React.FC = () => {
                     />
                     <div aria-hidden className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/60 to-transparent" />
                     <figcaption className="absolute inset-x-4 bottom-4 flex items-center justify-between gap-2 text-[12px] text-[#f1ede3]">
-                      <span className="rounded-full bg-black/35 px-3 py-1.5 ring-1 ring-white/20 backdrop-blur">Isfahan, Iran</span>
+                      {/* <span className="rounded-full bg-black/35 px-3 py-1.5 ring-1 ring-white/20 backdrop-blur">Isfahan, Iran</span> */}
                       <span className="rounded-full bg-black/35 px-3 py-1.5 tabular-nums ring-1 ring-white/20 backdrop-blur">
                         {time} local
                       </span>
