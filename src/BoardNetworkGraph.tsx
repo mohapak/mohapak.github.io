@@ -13,7 +13,7 @@ type NodeDatum = {
   fx?: number | null; fy?: number | null;
 };
 
-type LinkDatum = { source: string | NodeDatum; target: string | NodeDatum; weight?: number; };
+type LinkDatum = { source: string | NodeDatum; target: string | NodeDatum; weight?: number };
 type GraphData = { nodes: NodeDatum[]; links: LinkDatum[] };
 
 interface Props {
@@ -21,16 +21,36 @@ interface Props {
   height?: number;
   minRadius?: number;
   maxRadius?: number;
+  /** Reports node / link counts once data is loaded (for the stats line). */
+  onStats?: (nodes: number, links: number) => void;
 }
+
+/* The panel is always "night", so the graph uses one fixed, restrained palette.
+   Firm categories from the data are mapped (by frequency) onto these tones. */
+const PALETTE = [
+  '#d9b86c', // gold
+  '#5fb7ad', // teal
+  '#8da7dc', // steel blue
+  '#ece6d6', // ivory
+  '#cf946f', // clay
+  '#a3c487', // sage
+  '#b793cc', // heather
+  '#7f93a8', // slate
+];
+const NODE_STROKE = '#0f1730';
+const LINK = 'rgba(214, 223, 245, 0.30)';
+const LINK_DIM = 'rgba(214, 223, 245, 0.07)';
+const LINK_ON = 'rgba(217, 184, 108, 0.9)';
 
 const getNodeDescription = (node: NodeDatum) => {
   const fallback = node.label ?? node.id;
   if (!node.title) return fallback;
-
-  return node.title
-    .replace(/<br\s*\/?\s*>/gi, '\n')
-    .replace(/<[^>]*>/g, '')
-    .trim() || fallback;
+  return (
+    node.title
+      .replace(/<br\s*\/?\s*>/gi, '\n')
+      .replace(/<[^>]*>/g, '')
+      .trim() || fallback
+  );
 };
 
 const BoardNetworkGraph: React.FC<Props> = ({
@@ -38,11 +58,15 @@ const BoardNetworkGraph: React.FC<Props> = ({
   height = 620,
   minRadius = 3,
   maxRadius = 12,
+  onStats,
 }) => {
-  const wrapRef  = useRef<HTMLDivElement>(null);          // outer wrapper (tooltip attaches here)
-  const frameRef = useRef<HTMLDivElement>(null);          // NEW: rounded/overflow frame for the svg
-  const svgRef   = useRef<SVGSVGElement>(null);
-  const zoomRef  = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const zoomRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  const fitRef = useRef<d3.ZoomTransform>(d3.zoomIdentity);
+  const onStatsRef = useRef(onStats);
+  onStatsRef.current = onStats;
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -51,6 +75,7 @@ const BoardNetworkGraph: React.FC<Props> = ({
   useEffect(() => {
     let isMounted = true;
     let cleanup: (() => void) | undefined;
+    setLoading(true);
 
     (async () => {
       try {
@@ -59,19 +84,19 @@ const BoardNetworkGraph: React.FC<Props> = ({
         const data: GraphData = await resp.json();
         if (!isMounted) return;
         setAccessibleNodes(data.nodes);
+        onStatsRef.current?.(data.nodes.length, data.links.length);
 
         const container = wrapRef.current!;
-        const frame = frameRef.current!;                  // NEW: use frame for sizing/clipping
+        const frame = frameRef.current!;
         const svgEl = svgRef.current!;
         if (!container || !frame || !svgEl) return;
 
-        // Tooltip attaches to container (outer), so it's not clipped by the inner overflow
         d3.select(container).style('position', 'relative');
 
         const svg = d3.select(svgEl);
         svg.selectAll('*').remove();
 
-        const width = frame.clientWidth;                  // NEW: size from frame
+        const width = frame.clientWidth;
         svg
           .attr('viewBox', `0 0 ${width} ${height}`)
           .attr('preserveAspectRatio', 'xMidYMid meet')
@@ -79,191 +104,170 @@ const BoardNetworkGraph: React.FC<Props> = ({
           .style('width', '100%')
           .style('height', `${height}px`)
           .style('background', 'transparent')
-          .style('display', 'block'); // avoids whitespace below inline SVG
+          .style('display', 'block');
 
-        const isDark = document.documentElement.classList.contains('dark');
-        const nodeStroke = isDark ? '#0B1220' : '#ffffff';
-        const labelFill  = isDark ? '#E2E8F0' : '#0F172A';
-        const haloFill   = isDark ? '#0B1220' : '#ffffff';
+        /* category colour → palette tone (most common category gets gold) */
+        const freq = d3.rollup(data.nodes, (v) => v.length, (d) => d.color ?? '');
+        const ranked = [...freq.entries()].sort((a, b) => b[1] - a[1]).map(([c]) => c);
+        const tone = (c?: string) => PALETTE[Math.max(0, ranked.indexOf(c ?? '')) % PALETTE.length];
 
-        // Tooltip with Tailwind colors
-        const tooltip = d3.select(container)
+        /* neighbour lookup for hover focus */
+        const neighbours = new Map<string, Set<string>>();
+        const idOf = (v: string | NodeDatum) => (typeof v === 'string' ? v : v.id);
+        data.links.forEach((l) => {
+          const a = idOf(l.source);
+          const b = idOf(l.target);
+          if (!neighbours.has(a)) neighbours.set(a, new Set());
+          if (!neighbours.has(b)) neighbours.set(b, new Set());
+          neighbours.get(a)!.add(b);
+          neighbours.get(b)!.add(a);
+        });
+
+        const tooltip = d3
+          .select(container)
           .append('div')
-          .attr('class', [
-            'pointer-events-none absolute z-20',
-            'rounded-xl border px-3 py-2 text-xs shadow-lg backdrop-blur',
-            'bg-white/95 text-slate-900 border-slate-200',
-            'dark:bg-slate-900/95 dark:text-slate-100 dark:border-slate-700',
-            'text-right whitespace-pre-line'
-          ].join(' '))
+          .attr(
+            'class',
+            [
+              'pointer-events-none absolute z-20 max-w-[16rem]',
+              'rounded-xl px-3 py-2 text-[12px] leading-snug shadow-2xl backdrop-blur',
+              'bg-[#0a1020]/95 text-[#ece6d6] ring-1 ring-white/15',
+              'text-right whitespace-pre-line',
+            ].join(' ')
+          )
           .attr('dir', 'auto')
           .style('opacity', '0')
           .style('transform', 'translate(-50%, -120%)');
 
         const g = svg.append('g');
 
-        const zoom = d3.zoom<SVGSVGElement, unknown>()
+        let fitK = 1;
+        const zoom = d3
+          .zoom<SVGSVGElement, unknown>()
           .scaleExtent([0.1, 8])
           .on('zoom', (event) => {
             g.attr('transform', event.transform);
-            const k = event.transform.k;
-            labels.attr('opacity', k > 1.6 ? 0.9 : 0);
+            // labels appear once the person zooms in beyond the fitted view
+            labels.attr('opacity', event.transform.k > fitK * 1.7 ? 0.9 : 0);
           });
 
-        // Attach zoom (enables drag, pinch, dblclick)
         svg.call(zoom);
         zoomRef.current = zoom;
-
-        // Remove D3's default wheel handler only (keeps the rest)
         svg.on('wheel.zoom', null as any);
 
-        // Custom animated wheel-zoom (trackpad/mouse)
-        // Uses cubic easing + small step to feel smooth across devices
         svg.on('wheel.smooth', (event: any) => {
-        event.preventDefault();
-        const we = event as WheelEvent;
-
-        // Where the mouse is (zoom around pointer)
-        const p = d3.pointer(event, svgEl);
-
-        // Normalize wheel delta across devices
-        // deltaMode: 0=pixels, 1=lines, 2=pages
-        const LINE_HEIGHT = 16;
-        const deltaY = we.deltaMode === 1 ? we.deltaY * LINE_HEIGHT
-                    : we.deltaMode === 2 ? we.deltaY * LINE_HEIGHT * 24
-                    : we.deltaY;
-
-        // Negative -> zoom in; Positive -> zoom out
-        const intensity = we.ctrlKey ? 0.0012 : 0.0022; // ctrlKey=precision trackpad/pinch
-        const k = Math.pow(2, -deltaY * intensity);
-
-        // Animate the scale change around the pointer
-        svg.interrupt();
-
-        svg
-            .transition()
-            .duration(180)
-            .ease(d3.easeCubicOut)
-            .call(zoom.scaleBy as any, k, p);
+          event.preventDefault();
+          const we = event as WheelEvent;
+          const p = d3.pointer(event, svgEl);
+          const LINE_HEIGHT = 16;
+          const deltaY =
+            we.deltaMode === 1 ? we.deltaY * LINE_HEIGHT : we.deltaMode === 2 ? we.deltaY * LINE_HEIGHT * 24 : we.deltaY;
+          const intensity = we.ctrlKey ? 0.0012 : 0.0022;
+          const k = Math.pow(2, -deltaY * intensity);
+          svg.interrupt();
+          svg.transition().duration(180).ease(d3.easeCubicOut).call(zoom.scaleBy as any, k, p);
         });
 
-        // Optional: smoother double-click zoom
         svg.on('dblclick.zoom', (event: any) => {
-        const p = d3.pointer(event, svgEl);
-        const t = d3.zoomTransform(svgEl);
-        const factor = event.shiftKey ? 1 / 1.6 : 1.6;
-        const newK = Math.max(0.1, Math.min(8, t.k * factor));
-        const newTransform = d3.zoomIdentity
-            .translate(p[0], p[1])
-            .scale(newK)
-            .translate(-p[0], -p[1]);
-
-        svg
-            .transition()
-            .duration(240)
-            .ease(d3.easeCubicOut)
-            .call(zoom.transform, newTransform);
+          const p = d3.pointer(event, svgEl);
+          const t = d3.zoomTransform(svgEl);
+          const factor = event.shiftKey ? 1 / 1.6 : 1.6;
+          const newK = Math.max(0.1, Math.min(8, t.k * factor));
+          const newTransform = d3.zoomIdentity.translate(p[0], p[1]).scale(newK).translate(-p[0], -p[1]);
+          svg.transition().duration(240).ease(d3.easeCubicOut).call(zoom.transform, newTransform);
         });
 
-        // Sizes
-        const sizes = data.nodes.map(n => n.size ?? 8);
+        const sizes = data.nodes.map((n) => n.size ?? 8);
         const sMin = Math.max(1, d3.min(sizes) ?? 1);
         const sMax = Math.max(sMin + 1, d3.max(sizes) ?? 20);
         const r = d3.scaleSqrt().domain([sMin, sMax]).range([minRadius, maxRadius]);
 
-        // higher-contrast palette
-        let linkColor = isDark ? '#C7D2FE' /* indigo-200 */ : '#475569' /* slate-600 */;
-        let haloColor = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(2,6,23,0.12)';
-        let linkOpacity = isDark ? 0.92 : 0.9;
-
-        // group for links with rounded ends
-        const linksGroup = g.append('g')
-          .attr('class', 'links')
-          .attr('stroke-linecap', 'round');
-
-        // “halo” underlay makes links readable on any background
-        const linkHalo = linksGroup.selectAll('line.halo')
-          .data(data.links)
-          .join('line')
-          .attr('class', 'halo')
-          .attr('stroke', haloColor)
-          .attr('stroke-opacity', 1)
-          .attr('vector-effect', 'non-scaling-stroke')  // keep thickness constant when zooming
-          .style('pointer-events', 'none')
-          .attr('stroke-width', l => {
-            const w = Math.max(0.5, Math.min(3, (l.weight ?? 1) * 0.6));
-            return w + 2; // a bit wider than the link
-          });
-
-        // the actual link line on top
-        const link = linksGroup.selectAll('line.link')
+        const link = g
+          .append('g')
+          .attr('stroke-linecap', 'round')
+          .selectAll('line.link')
           .data(data.links)
           .join('line')
           .attr('class', 'link')
-          .attr('stroke', linkColor)
-          .attr('stroke-opacity', linkOpacity)
-          .attr('vector-effect', 'non-scaling-stroke')  // stays readable at any zoom
+          .attr('stroke', LINK)
+          .attr('vector-effect', 'non-scaling-stroke')
           .style('pointer-events', 'none')
-          .attr('stroke-width', l => Math.max(0.8, Math.min(3.5, (l.weight ?? 1) * 0.7)));
+          .style('transition', 'stroke 0.2s')
+          .attr('stroke-width', (l) => Math.max(0.8, Math.min(3, (l.weight ?? 1) * 0.6)));
 
-
-        // Nodes
-        const node = g.append('g')
+        const node = g
+          .append('g')
           .selectAll<SVGGElement, NodeDatum>('g.node')
           .data(data.nodes)
           .join('g')
           .attr('class', 'node')
           .attr('tabindex', 0)
           .attr('role', 'img')
-          .attr('aria-label', d => getNodeDescription(d))
+          .style('cursor', 'grab')
+          .attr('aria-label', (d) => getNodeDescription(d))
           .call(
-            d3.drag<SVGGElement, NodeDatum>()
-              .on('start', (event: D3DragEvent<SVGGElement, NodeDatum, unknown>, d) => {
-                // ⬅️ ensure the sim wakes up even if it had stopped
+            d3
+              .drag<SVGGElement, NodeDatum>()
+              .on('start', (_event: D3DragEvent<SVGGElement, NodeDatum, unknown>, d) => {
                 sim.alpha(0.6).restart();
-                d.fx = d.x; 
+                d.fx = d.x;
                 d.fy = d.y;
               })
               .on('drag', (event: D3DragEvent<SVGGElement, NodeDatum, unknown>, d) => {
-                d.fx = event.x; 
+                d.fx = event.x;
                 d.fy = event.y;
               })
-              .on('end', (event: D3DragEvent<SVGGElement, NodeDatum, unknown>, d) => {
-                d.fx = null; 
+              .on('end', (_event: D3DragEvent<SVGGElement, NodeDatum, unknown>, d) => {
+                d.fx = null;
                 d.fy = null;
               })
           );
-        node.append('title').text(d => getNodeDescription(d));
-        node.append('circle')
-          .attr('r', d => r(d.size ?? 8))
-          .attr('fill', d => d.color ?? (isDark ? '#38BDF8' : '#0EA5E9'))
-          .attr('stroke', nodeStroke)
-          .attr('stroke-width', 1.2);
 
-        const labels = node.append('text')
-          .text(d => d.label ?? d.id)
-          .attr('x', d => r(d.size ?? 8) + 3)
+        node.append('title').text((d) => getNodeDescription(d));
+        const circles = node
+          .append('circle')
+          .attr('r', (d) => r(d.size ?? 8))
+          .attr('fill', (d) => tone(d.color))
+          .attr('stroke', NODE_STROKE)
+          .attr('stroke-width', 1.4)
+          .style('transition', 'opacity 0.2s');
+
+        const labels = node
+          .append('text')
+          .text((d) => d.label ?? d.id)
+          .attr('x', (d) => r(d.size ?? 8) + 3)
           .attr('y', 3)
           .attr('font-size', 8)
           .attr('opacity', 0)
-          .attr('fill', labelFill)
+          .attr('fill', '#ece6d6')
           .attr('paint-order', 'stroke')
-          .attr('stroke', haloFill)
+          .attr('stroke', NODE_STROKE)
           .attr('stroke-width', 3);
+
+        /* hover focus: dim everything except the node and its neighbours */
+        const focus = (id: string | null) => {
+          if (id === null) {
+            circles.attr('opacity', 1);
+            link.attr('stroke', LINK);
+            return;
+          }
+          const nb = neighbours.get(id) ?? new Set<string>();
+          circles.attr('opacity', (d) => (d.id === id || nb.has(d.id) ? 1 : 0.18));
+          link.attr('stroke', (l) =>
+            idOf(l.source) === id || idOf(l.target) === id ? LINK_ON : LINK_DIM
+          );
+        };
 
         let raf = 0;
         const showTooltip = (nodeDatum: NodeDatum, x: number, y: number) => {
-          tooltip
-            .text(getNodeDescription(nodeDatum))
-            .style('left', `${x}px`)
-            .style('top', `${y - 16}px`)
-            .style('opacity', '1');
+          tooltip.text(getNodeDescription(nodeDatum)).style('left', `${x}px`).style('top', `${y - 16}px`).style('opacity', '1');
         };
 
         node
           .on('mouseenter', (event, d) => {
             const [x, y] = d3.pointer(event, container);
             showTooltip(d, x, y);
+            focus(d.id);
           })
           .on('mousemove', (event) => {
             if (raf) return;
@@ -273,76 +277,73 @@ const BoardNetworkGraph: React.FC<Props> = ({
               raf = 0;
             });
           })
-          .on('focus', (_event, d) => showTooltip(d, width / 2, 48))
+          .on('focus', (_event, d) => {
+            showTooltip(d, width / 2, 48);
+            focus(d.id);
+          })
           .on('mouseleave', () => {
             if (raf) cancelAnimationFrame(raf), (raf = 0);
             tooltip.style('opacity', '0');
+            focus(null);
           })
-          .on('blur', () => tooltip.style('opacity', '0'));
+          .on('blur', () => {
+            tooltip.style('opacity', '0');
+            focus(null);
+          });
 
-        // Simulation
-        const sim = d3.forceSimulation<NodeDatum>(data.nodes)
-          .alpha(1)                  // start energetic
-          .alphaMin(0.03)            // stop a bit earlier (default ~0.001)
-          .alphaDecay(0.06)          // decay faster than default ~0.0228
-          .velocityDecay(0.35)       // slightly more damping (default 0.4)
-          .force('link', d3.forceLink<NodeDatum, LinkDatum>(data.links)
-            .id(d => d.id)
-            .distance(40)
-            .strength(0.6))
-          .force('charge', d3.forceManyBody<NodeDatum>()
-            .strength(-30)
-            .theta(0.9)              // Barnes–Hut approximation (perf)
-            .distanceMax(180))       // skip far interactions (perf)
+        const sim = d3
+          .forceSimulation<NodeDatum>(data.nodes)
+          .alpha(1)
+          .alphaMin(0.03)
+          .alphaDecay(0.06)
+          .velocityDecay(0.35)
+          .force('link', d3.forceLink<NodeDatum, LinkDatum>(data.links).id((d) => d.id).distance(54).strength(0.55))
+          .force('charge', d3.forceManyBody<NodeDatum>().strength(-62).theta(0.9).distanceMax(260))
+          .force('x', d3.forceX<NodeDatum>(width / 2).strength(0.035))
+          .force('y', d3.forceY<NodeDatum>(height / 2).strength(0.05))
           .force('center', d3.forceCenter(width / 2, height / 2))
-          .force('collision', d3.forceCollide<NodeDatum>()
-            .radius(d => r(d.size ?? 8) + 2));
+          .force('collision', d3.forceCollide<NodeDatum>().radius((d) => r(d.size ?? 8) + 2));
+
+        /* fit the settled layout to the frame (and re-fit on resize) */
+        const fit = (animate: boolean) => {
+          const xs = data.nodes.map((n) => n.x ?? 0);
+          const ys = data.nodes.map((n) => n.y ?? 0);
+          const x0 = d3.min(xs) ?? 0;
+          const y0 = d3.min(ys) ?? 0;
+          const bw = Math.max(1, (d3.max(xs) ?? 1) - x0);
+          const bh = Math.max(1, (d3.max(ys) ?? 1) - y0);
+          const w = frame.clientWidth;
+          const pad = 48;
+          const k = Math.min((w - pad * 2) / bw, (height - pad * 2) / bh, 1.7);
+          const t = d3.zoomIdentity.translate(w / 2 - k * (x0 + bw / 2), height / 2 - k * (y0 + bh / 2)).scale(k);
+          fitK = k;
+          fitRef.current = t;
+          if (animate) svg.transition().duration(900).ease(d3.easeCubicOut).call(zoom.transform, t);
+          else svg.call(zoom.transform, t);
+        };
+        sim.on('end', () => fit(true));
 
         sim.on('tick', () => {
           link
-            .attr('x1', d => (d.source as NodeDatum).x ?? 0)
-            .attr('y1', d => (d.source as NodeDatum).y ?? 0)
-            .attr('x2', d => (d.target as NodeDatum).x ?? 0)
-            .attr('y2', d => (d.target as NodeDatum).y ?? 0);
-
-          linkHalo
-            .attr('x1', d => (d.source as NodeDatum).x ?? 0)
-            .attr('y1', d => (d.source as NodeDatum).y ?? 0)
-            .attr('x2', d => (d.target as NodeDatum).x ?? 0)
-            .attr('y2', d => (d.target as NodeDatum).y ?? 0);
-
-          node.attr('transform', d => `translate(${d.x ?? 0},${d.y ?? 0})`);
+            .attr('x1', (d) => (d.source as NodeDatum).x ?? 0)
+            .attr('y1', (d) => (d.source as NodeDatum).y ?? 0)
+            .attr('x2', (d) => (d.target as NodeDatum).x ?? 0)
+            .attr('y2', (d) => (d.target as NodeDatum).y ?? 0);
+          node.attr('transform', (d) => `translate(${d.x ?? 0},${d.y ?? 0})`);
         });
 
-        sim.on('end', () => {
-          // Optional: explicitly stop the sim to save CPU once layout is stable.
-          // If you want it fully stopped, uncomment the next line:
-          // sim.stop();
-        });
-
-        // Resize (observe frame, not outer wrapper)
         const ro = new ResizeObserver(([entry]) => {
           const w = entry.contentRect.width;
           svg.attr('viewBox', `0 0 ${w} ${height}`);
           sim.force('center', d3.forceCenter(w / 2, height / 2) as any).alpha(0.2).restart();
+          fit(false);
         });
         ro.observe(frame);
 
         setLoading(false);
 
-        const themeObs = new MutationObserver(() => {
-          const darkNow = document.documentElement.classList.contains('dark');
-          link
-            .attr('stroke', darkNow ? '#C7D2FE' : '#475569')
-            .attr('stroke-opacity', darkNow ? 0.92 : 0.85);
-          linkHalo
-            .attr('stroke', darkNow ? 'rgba(255,255,255,0.15)' : 'rgba(2,6,23,0.12)');
-        });
-        themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
         cleanup = () => {
           ro.disconnect();
-          themeObs.disconnect();
           sim.stop();
           tooltip.remove();
           svg.selectAll('*').remove();
@@ -355,63 +356,65 @@ const BoardNetworkGraph: React.FC<Props> = ({
       }
     })();
 
-    return () => { isMounted = false; cleanup?.(); };
+    return () => {
+      isMounted = false;
+      cleanup?.();
+    };
   }, [dataUrl, height, minRadius, maxRadius]);
 
-    const handleReset = () => {
+  const handleReset = () => {
     if (!svgRef.current || !zoomRef.current) return;
-    d3.select(svgRef.current)
-        .transition()
-        .duration(300)
-        .ease(d3.easeCubicOut)
-        .call(zoomRef.current.transform, d3.zoomIdentity);
-    };
-    
-    return (
-  <div ref={wrapRef} className="relative">
-    {/* Outer card (rounded + visible edge) */}
-    <div className="relative rounded-2xl bg-white/95 dark:bg-slate-900/90 ring-1 ring-slate-200 dark:ring-slate-800 shadow-lg">
-      {/* Inner frame: actually clips the SVG and the loading layer */}
-      <div ref={frameRef} className="relative rounded-2xl overflow-hidden">
-        <svg ref={svgRef} style={{ touchAction: 'none', display: 'block' }} />
+    d3.select(svgRef.current).transition().duration(450).ease(d3.easeCubicOut).call(zoomRef.current.transform, fitRef.current);
+  };
 
-        {/* Put the loading layer INSIDE the clipped frame */}
-        {loading && (
-          <div className="absolute inset-0 grid place-items-center text-sm text-slate-600 dark:text-slate-300 bg-white/70 dark:bg-slate-900/60 backdrop-blur-sm">
-            Loading network…
-          </div>
-        )}
-      </div>
+  return (
+    <div ref={wrapRef} className="relative">
+      <div className="relative overflow-hidden rounded-[24px] bg-[#070c19] ring-1 ring-white/10">
+        <div ref={frameRef} className="relative overflow-hidden">
+          {/* soft vignette so nodes never touch the frame edge */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-10"
+            style={{ background: 'radial-gradient(ellipse at center, transparent 55%, rgba(8,13,26,0.65) 100%)' }}
+          />
+          <svg ref={svgRef} style={{ touchAction: 'none', display: 'block' }} />
+          {loading && (
+            <div className="absolute inset-0 z-20 grid place-items-center bg-[#070c19]/80 text-[13px] text-[#ece6d6]/70 backdrop-blur-sm">
+              Loading network…
+            </div>
+          )}
+        </div>
 
-      {/* Controls (stay outside the clipped frame so they aren’t cropped) */}
-      <div className="absolute right-3 top-3 flex gap-2">
         <button
           type="button"
-          className="text-xs px-2 py-1 rounded bg-slate-900 text-white dark:bg-white dark:text-slate-900 hover:opacity-80 transition-opacity"
           onClick={handleReset}
           title="Reset view"
           aria-label="Reset network view"
+          className="absolute right-4 top-4 z-30 rounded-full bg-white/10 px-3.5 py-1.5 text-[12px] font-medium text-[#ece6d6] ring-1 ring-white/15 backdrop-blur transition hover:bg-white/20"
         >
-          Reset
+          Reset view
         </button>
-      </div>
 
-      {/* Errors live below the frame */}
-      {err && <div className="p-4 text-red-600 text-sm" role="alert">{err}</div>}
-      {!err && accessibleNodes.length > 0 && (
-        <details className="border-t border-slate-200 p-4 text-sm dark:border-slate-800">
-          <summary className="cursor-pointer font-medium text-slate-700 dark:text-slate-200">View network data as text</summary>
-          <ul className="mt-3 grid gap-3 md:grid-cols-2">
-            {accessibleNodes.map((node) => (
-              <li key={node.id} className="rounded-lg bg-slate-50 p-3 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200" dir="auto">
-                {getNodeDescription(node)}
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
+        {err && (
+          <div className="p-4 text-sm text-red-300" role="alert">
+            {err}
+          </div>
+        )}
+        {!err && accessibleNodes.length > 0 && (
+          <details className="border-t border-white/10 p-4 text-sm">
+            <summary className="cursor-pointer text-[13px] font-medium text-[#ece6d6]/80">View network data as text</summary>
+            <ul className="mt-3 grid gap-3 md:grid-cols-2">
+              {accessibleNodes.map((n) => (
+                <li key={n.id} className="whitespace-pre-line rounded-lg bg-white/5 p-3 text-[13px] text-[#ece6d6]/80" dir="auto">
+                  {getNodeDescription(n)}
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
+      </div>
     </div>
-  </div>
-);
-}
+  );
+};
+
 export default BoardNetworkGraph;

@@ -22,9 +22,9 @@ class ErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: 16, fontFamily: 'system-ui' }}>
-          <h1 style={{ fontSize: 18, marginBottom: 8 }}>Something went wrong</h1>
-          <pre style={{ whiteSpace: 'pre-wrap' }}>{this.state.error?.message}</pre>
+        <div className="container-x py-24">
+          <p className="label">Something went wrong</p>
+          <pre className="mt-4 whitespace-pre-wrap text-sm text-fg/70">{this.state.error?.message}</pre>
         </div>
       );
     }
@@ -38,7 +38,7 @@ if (!rootEl) throw new Error('Root element not found');
 createRoot(rootEl).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <Suspense fallback={<div style={{ padding: 16 }}>Loading…</div>}>
+      <Suspense fallback={<div className="container-x py-24"><p className="label">Loading…</p></div>}>
         <EconomicsPortfolio />
       </Suspense>
     </ErrorBoundary>

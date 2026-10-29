@@ -18,22 +18,23 @@
 
   <title>Page Not Found - Mohammad Mehdi Pakravan</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap');
     
     :root {
-      --bg-light: #f8fafc;
-      --text-light: #0f172a;
-      --accent: #0ea5e9;
-      --border-light: #e2e8f0;
-      --card-bg: #ffffff;
+      --bg-light: #f7f4ee;
+      --text-light: #0d1630;
+      --accent: #8f5f19;
+      --border-light: rgba(13,22,48,.14);
+      --card-bg: #fbf9f5;
       --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
     
     [data-theme="dark"] {
-      --bg-light: #0f172a;
-      --text-light: #f1f5f9;
-      --border-light: #334155;
-      --card-bg: #1e293b;
+      --bg-light: #0a1020;
+      --text-light: #ece6d6;
+      --accent: #ddbb6f;
+      --border-light: rgba(236,230,214,.16);
+      --card-bg: #0f1730;
       --shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     }
     
@@ -53,17 +54,7 @@
       transition: background-color 0.35s ease, color 0.35s ease;
     }
     
-    .bg-pattern {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      background-image:
-        radial-gradient(1200px 600px at 10% -10%, rgba(56, 189, 248, 0.10), transparent 40%),
-        radial-gradient(900px 500px at 90% 0%, rgba(16, 185, 129, 0.09), transparent 45%),
-        radial-gradient(1000px 700px at 50% 110%, rgba(99, 102, 241, 0.07), transparent 50%);
-      filter: saturate(1.05);
-      opacity: 0.7;
-    }
+      .bg-pattern { display: none; }
     
     .container {
       max-width: 640px;
@@ -78,25 +69,27 @@
     }
     
     .error-code {
-      font-size: 5rem;
-      font-weight: 800;
-      background: linear-gradient(90deg, #0ea5e9, #10b981);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-style: italic;
+      font-size: 7rem;
+      font-weight: 400;
+      color: var(--accent);
       margin-bottom: 1rem;
       line-height: 1;
     }
     
     h1 {
-      font-size: 2.5rem;
-      font-weight: 700;
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 3rem;
+      font-weight: 400;
+      letter-spacing: -0.02em;
       margin-bottom: 1rem;
     }
     
     p {
       font-size: 1.125rem;
-      color: #64748b;
+      color: var(--text-light);
+      opacity: .7;
       margin-bottom: 2rem;
       max-width: 500px;
       line-height: 1.6;
@@ -107,10 +100,10 @@
       align-items: center;
       gap: 0.5rem;
       padding: 0.75rem 1.5rem;
-      background: #0ea5e9;
-      color: white;
+      background: var(--accent);
+      color: var(--bg-light);
       text-decoration: none;
-      border-radius: 0.75rem;
+      border-radius: 999px;
       font-weight: 500;
       transition: all 0.2s ease;
       border: none;
@@ -120,16 +113,16 @@
     
     .btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(14, 165, 233, 0.3);
-      background: #0284c7;
+      filter: brightness(1.08);
     }
     
     .theme-toggle {
+      color: var(--text-light);
       position: absolute;
       top: 1.5rem;
       right: 1.5rem;
       padding: 0.5rem;
-      border-radius: 0.5rem;
+      border-radius: 999px;
       background: var(--card-bg);
       border: 1px solid var(--border-light);
       cursor: pointer;
@@ -142,7 +135,7 @@
     }
     
     .theme-toggle:hover {
-      background: rgba(14, 165, 233, 0.1);
+      background: rgba(128,128,128,.12);
     }
     
     .theme-toggle svg {
@@ -153,7 +146,8 @@
     footer {
       padding: 1.5rem;
       text-align: center;
-      color: #64748b;
+      color: var(--text-light);
+      opacity: .65;
       font-size: 0.875rem;
       border-top: 1px solid var(--border-light);
       width: 100%;
@@ -213,7 +207,7 @@
       if (storedTheme) return storedTheme;
       
       // Use system preference if no stored preference
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      return 'dark';
     };
     
     // Initialize theme

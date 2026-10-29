@@ -1,101 +1,233 @@
-﻿@tailwind base;
+@import '@fontsource/instrument-serif/400.css';
+@import '@fontsource/instrument-serif/400-italic.css';
+@import '@fontsource-variable/inter/wght.css';
+
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ------------------------------------------------------------------ *
+ *  Design tokens — HSL triplets (used as hsl(var(--x) / alpha))
+ *  Light  = warm paper + navy ink      Dark = navy night + warm ivory
+ *  One accent (gold) on: primary CTA, hairline marks, active states.
+ * ------------------------------------------------------------------ */
+:root {
+  --bg: 40 33% 95%;
+  --surface: 40 30% 98%;
+  --fg: 223 50% 11%;
+  --accent: 37 72% 32%;
+  --on-accent: 40 33% 96%;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  color-scheme: light;
+}
+.dark {
+  --bg: 223 52% 8%;
+  --surface: 223 44% 11.5%;
+  --fg: 42 34% 91%;
+  --accent: 40 58% 63%;
+  --on-accent: 223 52% 8%;
+  color-scheme: dark;
+}
+/* A section that is always "night", whatever the page theme */
+.scope-night {
+  --bg: 223 52% 8%;
+  --surface: 223 44% 11.5%;
+  --fg: 42 34% 91%;
+  --accent: 40 58% 63%;
+  --on-accent: 223 52% 8%;
+  color-scheme: dark;
+}
+
+/* first rule: no white flash */
+html,
+body {
+  background: hsl(var(--bg));
+  color: hsl(var(--fg));
+}
 
 @layer base {
   html {
-    @apply scroll-smooth bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100;
-    font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
-    color-scheme: light dark; /* NEW */
-  }
-  h1, h2, h3 {
-    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
-    letter-spacing: -0.01em;
+    @apply scroll-smooth antialiased;
+    font-family: 'Inter Variable', Inter, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
   }
   body {
-    @apply antialiased;
+    @apply text-[16px] leading-[1.6];
+    overflow-x: clip;
+    letter-spacing: -0.005em;
   }
-  /* Ensure modal content is properly scrollable on mobile */
-  .modal-content {
-    -webkit-overflow-scrolling: touch;
+  h1,
+  h2,
+  h3 {
+    font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+    font-weight: 400;
   }
   ::selection {
-    @apply bg-sky-200 text-slate-900;
+    background: hsl(var(--accent) / 0.3);
+    color: hsl(var(--fg));
   }
-  .dark ::selection {
-    @apply bg-sky-700 text-white;
+  :focus-visible {
+    outline: 2px solid hsl(var(--accent));
+    outline-offset: 3px;
+    border-radius: 6px;
   }
-}
-
-/* Utility to prevent first-frame animation; we remove this class in JS after mount */
-@layer utilities {
-  .no-transitions * { 
-    transition: none !important; 
-    animation: none !important;
+  img {
+    -webkit-user-drag: none;
   }
 }
 
-/* Opt-in transitions (examples) */
-.btn-transition { @apply transition-colors duration-300; }
-.card-transition { @apply transition-shadow duration-300; }
+/* ------------------------------------------------------------------ *
+ *  Shared materials & type utilities
+ * ------------------------------------------------------------------ */
+@layer components {
+  /* the one "glass" material: nav, chips, secondary buttons */
+  .glass {
+    background: hsl(var(--fg) / 0.055);
+    -webkit-backdrop-filter: blur(16px) saturate(1.3);
+    backdrop-filter: blur(16px) saturate(1.3);
+    box-shadow: inset 0 0 0 1px hsl(var(--fg) / 0.12);
+  }
 
-/* --- Modern background pattern (subtle, academic) --- */
-.bg-pattern {
-  background-image:
-    radial-gradient(1200px 600px at 10% -10%, rgba(56, 189, 248, 0.10), transparent 40%),
-    radial-gradient(900px 500px at 90% 0%, rgba(16, 185, 129, 0.09), transparent 45%),
-    radial-gradient(1000px 700px at 50% 110%, rgba(99, 102, 241, 0.07), transparent 50%);
-  filter: saturate(1.05);
-}
+  .label {
+    @apply text-[11px] font-medium uppercase tracking-label;
+    font-family: 'Inter Variable', Inter, system-ui, sans-serif;
+    color: hsl(var(--fg) / 0.62);
+  }
 
-/* Make background pattern more subtle on mobile */
-@media (max-width: 768px) {
-  .bg-pattern {
-    opacity: 0.7;
+  .container-x {
+    @apply mx-auto w-full max-w-[75rem] px-5 sm:px-8 lg:px-12;
+  }
+
+  .section-y {
+    padding-block: clamp(5rem, 11vw, 9.5rem);
+  }
+
+  .h-section {
+    font-size: clamp(2.5rem, 5.4vw, 4.75rem);
+    line-height: 1.02;
+    letter-spacing: -0.022em;
+  }
+
+  .hairline {
+    border-color: hsl(var(--fg) / 0.12);
+  }
+
+  /* pill buttons */
+  .btn {
+    @apply relative inline-flex items-center justify-center gap-3 rounded-full text-[14px] font-medium no-underline;
+    height: 48px;
+    padding-inline: 24px;
+    transition: transform 0.25s var(--ease-out), background-color 0.25s, color 0.25s, box-shadow 0.25s;
+    will-change: transform;
+  }
+  .btn:active {
+    transform: scale(0.97);
+  }
+  .btn-primary {
+    background: hsl(var(--accent));
+    color: hsl(var(--on-accent));
+    padding-right: 8px;
+    box-shadow: 0 1px 2px hsl(var(--bg) / 0.4), 0 8px 28px -8px hsl(var(--accent) / 0.55);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 1px 2px hsl(var(--bg) / 0.4), 0 12px 36px -8px hsl(var(--accent) / 0.75);
+  }
+  .btn-primary .btn-disc {
+    @apply grid h-8 w-8 place-items-center rounded-full;
+    background: hsl(var(--on-accent));
+    color: hsl(var(--accent));
+    transition: transform 0.3s var(--ease-out);
+  }
+  .btn-primary:hover .btn-disc {
+    transform: translateX(2px) rotate(-45deg);
+  }
+  .btn-ghost {
+    @apply glass;
+  }
+  .btn-ghost:hover {
+    background: hsl(var(--fg) / 0.1);
+  }
+
+  /* underline that grows from the left */
+  .link-u {
+    background: linear-gradient(currentColor, currentColor) left bottom / 0 1px no-repeat;
+    transition: background-size 0.35s var(--ease-out);
+    padding-bottom: 2px;
+  }
+  .link-u:hover,
+  .link-u:focus-visible {
+    background-size: 100% 1px;
   }
 }
 
-/* Gentle float for any decorative chips/badges (optional) */
-@keyframes float-slow {
-  0%   { transform: translateY(0) }
-  50%  { transform: translateY(-6px) }
-  100% { transform: translateY(0) }
+/* paper grain — unifies surfaces, kills banding */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
-.animate-float-slow { animation: float-slow 6s ease-in-out infinite; }
+.dark body::after {
+  opacity: 0.07;
+}
 
-:root { --theme-anim-ms: 300; } /* easy to tweak later */
+/* ------------------------------------------------------------------ *
+ *  Motion helpers
+ * ------------------------------------------------------------------ */
+@keyframes pulse-dot {
+  0% { box-shadow: 0 0 0 0 hsl(var(--accent) / 0.55); }
+  70% { box-shadow: 0 0 0 9px hsl(var(--accent) / 0); }
+  100% { box-shadow: 0 0 0 0 hsl(var(--accent) / 0); }
+}
+.pulse-dot {
+  animation: pulse-dot 2.4s ease-out infinite;
+}
 
-.theme-animating * {
-  transition:
-    background-color calc(var(--theme-anim-ms) * 1ms) cubic-bezier(.22,.61,.36,1),
-    color            calc(var(--theme-anim-ms) * 1ms) cubic-bezier(.22,.61,.36,1),
-    border-color     calc(var(--theme-anim-ms) * 1ms) cubic-bezier(.22,.61,.36,1),
-    fill             calc(var(--theme-anim-ms) * 1ms) cubic-bezier(.22,.61,.36,1),
-    stroke           calc(var(--theme-anim-ms) * 1ms) cubic-bezier(.22,.61,.36,1);
+/* theme cross-fade (added briefly by the toggle) */
+.theme-animating *,
+.theme-animating *::before,
+.theme-animating *::after {
+  transition: background-color 0.35s var(--ease-out), color 0.35s var(--ease-out),
+    border-color 0.35s var(--ease-out), box-shadow 0.35s var(--ease-out) !important;
+}
+.no-transitions * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* year scroller: hide scrollbar, keep scrolling */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .theme-animating * { transition: none !important; }
+  html { scroll-behavior: auto !important; }
+  .pulse-dot { animation: none !important; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }
 
-/* Respect reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .theme-animating * { 
-    transition: none !important; 
-  }
-  
-  /* Disable all non-essential animations */
-  .animate-float-slow,
-  .animate-spin-slow {
+@media print {
+  body::after { display: none; }
+  *, *::before, *::after {
+    opacity: 1 !important;
+    transform: none !important;
     animation: none !important;
-  }
-  
-  /* Ensure smooth scrolling still works but without animations */
-  html {
-    scroll-behavior: auto !important;
+    transition: none !important;
   }
 }
+<<<<<<< HEAD
 
 @keyframes spin-slow { 
   to { transform: rotate(360deg) } 
@@ -142,3 +274,5 @@
     transition: none !important;
   }
 }
+=======
+>>>>>>> 3255076 (	modified:   index.html)

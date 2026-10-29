@@ -2,42 +2,31 @@ const defaultTheme = require('tailwindcss/defaultTheme');
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    './index.html',
-    './src/**/*.{js,ts,jsx,tsx}',
-    // If you keep files outside src, list them explicitly:
-    './economics_portfolio.tsx',
-    // './components/**/*.{js,ts,jsx,tsx}', // uncomment if you move files here
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   darkMode: 'class',
   theme: {
     extend: {
-      fontFamily: {
-        sans: ['"Plus Jakarta Sans"', ...defaultTheme.fontFamily.sans],
-        display: ['"Source Serif 4"', ...defaultTheme.fontFamily.serif],
+      /* Colour tokens are HSL triplets in index.css so every opacity step
+         (text-fg/60, border-fg/10 …) works in both themes. */
+      colors: {
+        bg: 'hsl(var(--bg) / <alpha-value>)',
+        surface: 'hsl(var(--surface) / <alpha-value>)',
+        fg: 'hsl(var(--fg) / <alpha-value>)',
+        accent: 'hsl(var(--accent) / <alpha-value>)',
+        'on-accent': 'hsl(var(--on-accent) / <alpha-value>)',
       },
-      transitionDuration: {
-        '250': '250ms',
-        '350': '350ms',
+      fontFamily: {
+        sans: ['"Inter Variable"', 'Inter', ...defaultTheme.fontFamily.sans],
+        display: ['"Instrument Serif"', 'Georgia', ...defaultTheme.fontFamily.serif],
+      },
+      letterSpacing: {
+        label: '0.18em',
       },
       transitionTimingFunction: {
-        smooth: 'cubic-bezier(0.4, 0, 0.2, 1)', // use with `ease-smooth`
+        out: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        smooth: 'cubic-bezier(0.4, 0, 0.2, 1)',
       },
     },
   },
-
-  // Only add safelist if you generate classes dynamically from data.
-  // Keep this tight to avoid CSS bloat.
-  safelist: [
-    // Status pills you actually use:
-    'bg-amber-100','text-amber-700','dark:bg-amber-900/30','dark:text-amber-300',
-    'bg-blue-100','text-blue-700','dark:bg-blue-900/30','dark:text-blue-300',
-    // If you ever map more palettes, add them here.
-  ],
-
-  plugins: [
-    // Optional, but recommended for nicer text and form controls:
-    // require('@tailwindcss/typography'),
-    // require('@tailwindcss/forms'),
-  ],
-}
+  plugins: [],
+};
