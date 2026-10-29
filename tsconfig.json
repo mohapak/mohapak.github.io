@@ -20,7 +20,7 @@
 
     "jsx": "react-jsx",
 
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"]
     },
