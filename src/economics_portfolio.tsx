@@ -680,7 +680,7 @@ const EconomicsPortfolio: React.FC = () => {
                       <ArrowRight className="h-4 w-4" />
                     </span>
                   </a>
-                  <a href="/assets/cv_main.pdf" className="btn btn-ghost">
+                  <a href="/assets/pakravan-cv.pdf" className="btn btn-ghost">
                     <Download className="h-4 w-4" />
                     Download CV
                   </a>
@@ -1022,7 +1022,7 @@ const EconomicsPortfolio: React.FC = () => {
                   </span>
                 }
               >
-                <a href="/assets/cv_main.pdf" target="_blank" rel="noopener noreferrer" className="btn btn-primary self-start md:self-end">
+                <a href="/assets/pakravan-cv.pdf" target="_blank" rel="noopener noreferrer" className="btn btn-primary self-start md:self-end">
                   Download CV (PDF)
                   <span className="btn-disc">
                     <Download className="h-4 w-4" />
