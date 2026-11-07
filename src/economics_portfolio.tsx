@@ -647,8 +647,8 @@ const EconomicsPortfolio: React.FC = () => {
             <div className="grid flex-1 items-center gap-12 py-8 lg:grid-cols-12 lg:gap-8">
               <div className="lg:col-span-7">
                 <motion.div {...rise(0.2)}>
-                  <p className="glass inline-flex h-9 items-center gap-2.5 rounded-full px-4 text-[12.5px] text-fg/85">
-                    <span aria-hidden className="pulse-dot h-1.5 w-1.5 rounded-full bg-accent" />
+                  <p className="inline-flex items-center gap-2 text-[13px] text-fg/75">
+                    <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent" />
                     Open to PhD opportunities in Economics &amp; Finance
                   </p>
                 </motion.div>
@@ -684,13 +684,6 @@ const EconomicsPortfolio: React.FC = () => {
                     <Download className="h-4 w-4" />
                     Download CV
                   </a>
-                  <a
-                    href="mailto:pakravanmohammad.eco@gmail.com"
-                    aria-label="Email Mohammad"
-                    className="btn btn-ghost !w-12 !px-0"
-                  >
-                    <Mail className="h-[18px] w-[18px]" />
-                  </a>
                 </motion.div>
               </div>
 
@@ -704,9 +697,9 @@ const EconomicsPortfolio: React.FC = () => {
                 >
                   <div
                     aria-hidden
-                    className="pointer-events-none absolute inset-0 translate-x-3 translate-y-3 rounded-[28px] border border-accent/45 sm:translate-x-4 sm:translate-y-4"
+                    className="pointer-events-none absolute inset-0 translate-x-3 translate-y-3 rounded-[28px] border border-fg/12 sm:translate-x-4 sm:translate-y-4"
                   />
-                  <div className="relative aspect-[4/5] overflow-hidden rounded-[28px] bg-surface shadow-[0_30px_70px_-28px_rgba(0,0,0,0.65)] ring-1 ring-fg/15">
+                  <div className="relative aspect-[4/5] overflow-hidden rounded-[28px] bg-surface shadow-[0_18px_40px_-24px_rgba(0,0,0,0.46)] ring-1 ring-fg/15">
                     <motion.img
                       src="/assets/images/portrait-960.jpg"
                       srcSet="/assets/images/portrait-640.jpg 640w, /assets/images/portrait-960.jpg 960w"
@@ -788,13 +781,15 @@ const EconomicsPortfolio: React.FC = () => {
                 }}
               >
                 <div className="lg:col-span-7">
-                  <div className="flex flex-wrap items-center gap-2 text-[12.5px]">
-                    <span className="glass rounded-full px-3.5 py-1.5">{paper.type}</span>
-                    <span className="glass inline-flex items-center gap-2 rounded-full px-3.5 py-1.5">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-fg/70">
+                    <span>{paper.type}</span>
+                    <span aria-hidden className="text-fg/35">·</span>
+                    <span className="inline-flex items-center gap-2">
                       <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent" />
                       {paper.status}
                     </span>
-                    <span className="glass rounded-full px-3.5 py-1.5 tabular-nums">{paper.year}</span>
+                    <span aria-hidden className="text-fg/35">·</span>
+                    <span className="tabular-nums">{paper.year}</span>
                   </div>
                   <h3 className="mt-7 text-[clamp(1.95rem,3.6vw,3.15rem)] leading-[1.06] tracking-[-0.022em]">{paper.title}</h3>
                   <p className="mt-7 max-w-[38rem] text-[16px] leading-[1.7] text-fg/70">{paper.abstract}</p>
