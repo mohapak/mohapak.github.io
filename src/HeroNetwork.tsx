@@ -82,10 +82,10 @@ const HeroNetwork: React.FC<Props> = ({ dataUrl, className }) => {
     // the headline column on the left stays calm.
     const project = (n: SimNode, t: number) => {
       const wide = W >= 900;
-      const boxW = wide ? W * 0.7 : W * 1.05;
+      const boxW = wide ? W * 0.58 : W * 1.05;
       const boxH = H * (wide ? 0.98 : 0.78);
       const s = Math.min(boxW / bbox.w, boxH / bbox.h);
-      const cx = wide ? W * 0.67 : W * 0.5;
+      const cx = wide ? W * 0.76 : W * 0.5;
       const cy = wide ? H * 0.52 : H * 0.62;
       const dx = reduce ? 0 : Math.sin(t * 0.00028 + n.ph) * 3.2;
       const dy = reduce ? 0 : Math.cos(t * 0.00023 + n.ph * 1.3) * 3.2;
@@ -117,8 +117,8 @@ const HeroNetwork: React.FC<Props> = ({ dataUrl, className }) => {
         ctx.beginPath();
         ctx.moveTo(a.x, a.y);
         ctx.lineTo(b.x, b.y);
-        ctx.strokeStyle = lit > 0.02 ? hsla(accent, 0.14 + lit * 0.7) : hsla(fg, 0.24);
-        ctx.lineWidth = 0.8 + lit * 1.1 + Math.min(l.w, 4) * 0.14;
+        ctx.strokeStyle = lit > 0.02 ? hsla(accent, 0.1 + lit * 0.42) : hsla(fg, 0.14);
+        ctx.lineWidth = 0.75 + lit * 0.7 + Math.min(l.w, 4) * 0.1;
         ctx.stroke();
       }
 
@@ -128,15 +128,15 @@ const HeroNetwork: React.FC<Props> = ({ dataUrl, className }) => {
         ctx.beginPath();
         ctx.arc(p.x, p.y, rad, 0, Math.PI * 2);
         if (n.hub || n.lit > 0.05) {
-          ctx.fillStyle = hsla(accent, n.hub ? 0.8 + n.lit * 0.2 : 0.3 + n.lit * 0.7);
+          ctx.fillStyle = hsla(accent, n.hub ? 0.58 + n.lit * 0.22 : 0.22 + n.lit * 0.4);
         } else {
-          ctx.fillStyle = hsla(fg, 0.55);
+          ctx.fillStyle = hsla(fg, 0.34);
         }
         ctx.fill();
         if (n.hub) {
           ctx.beginPath();
           ctx.arc(p.x, p.y, rad + 4 + n.lit * 4, 0, Math.PI * 2);
-          ctx.strokeStyle = hsla(accent, 0.3 + n.lit * 0.4);
+          ctx.strokeStyle = hsla(accent, 0.2 + n.lit * 0.28);
           ctx.lineWidth = 1;
           ctx.stroke();
         }
@@ -232,7 +232,7 @@ const HeroNetwork: React.FC<Props> = ({ dataUrl, className }) => {
         readColors();
         resize();
         draw(0);
-        canvas.style.opacity = '1';
+        canvas.style.opacity = '0.68';
         if (!reduce) raf = requestAnimationFrame(loop);
       } catch {
         /* decorative only — fail silently */
