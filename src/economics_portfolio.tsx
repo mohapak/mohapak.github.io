@@ -961,7 +961,7 @@ const EconomicsPortfolio: React.FC = () => {
                 <ul className="mt-5 divide-y divide-fg/10 border-y hairline">
                   {interests.map((it, i) => (
                     <li key={it} className="group flex items-baseline gap-5 py-4">
-                      <span className="label w-6 tabular-nums">0{i + 1}</span>
+                      <span className="label w-6 tabular-nums">{i + 1}</span>
                       <span className="font-display text-[1.65rem] leading-tight tracking-[-0.015em] transition-colors duration-300 group-hover:text-accent">
                         {it}
                       </span>
