@@ -531,8 +531,41 @@ const EconomicsPortfolio: React.FC = () => {
             }`}
             aria-label="Mohammad Mehdi Pakravan — home"
           >
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-accent font-display text-[20px] italic leading-none text-on-accent">
-              mp
+            <span
+              aria-hidden="true"
+              className="grid h-9 w-9 flex-none place-items-center rounded-full"
+            >
+              <svg
+                viewBox="0 0 36 36"
+                className="h-9 w-9"
+                fill="none"
+                focusable="false"
+                aria-hidden="true"
+              >
+                <circle cx="18" cy="18" r="17.6" fill="#0D1930" />
+                <circle
+                  cx="18"
+                  cy="18"
+                  r="16.4"
+                  stroke="hsl(var(--accent))"
+                  strokeWidth="0.6"
+                  opacity="0.6"
+                />
+                <path
+                  d="M8 25V11.5l10 7.5 10-7.5V25"
+                  stroke="hsl(var(--accent))"
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <g fill="hsl(var(--accent))">
+                  <circle cx="8" cy="25" r="1.7" />
+                  <circle cx="8" cy="11.5" r="1.7" />
+                  <circle cx="18" cy="19" r="1.7" />
+                  <circle cx="28" cy="11.5" r="1.7" />
+                  <circle cx="28" cy="25" r="2.5" />
+                </g>
+              </svg>
             </span>
             <span className="hidden whitespace-nowrap text-[13.5px] font-medium tracking-[-0.01em] lg:inline">Mohammad Mehdi Pakravan</span>
           </a>
