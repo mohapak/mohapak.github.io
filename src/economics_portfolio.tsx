@@ -1030,7 +1030,7 @@ const EconomicsPortfolio: React.FC = () => {
               {cv.map((section) => (
                 <Reveal key={section.category}>
                   <div className="grid gap-8 border-t hairline py-10 md:grid-cols-12 md:gap-10 md:py-14">
-                    <h3 className="label md:sticky md:top-28 md:col-span-2 md:self-start">{section.category}</h3>
+                    <h3 className="label text-[14.5px] md:sticky md:top-28 md:col-span-2 md:self-start">{section.category}</h3>
                     <div className="space-y-12 md:col-span-10">
                       {section.items.map((item) => (
                         <div key={item.title} className="grid gap-x-10 gap-y-3 sm:grid-cols-[9.5rem_1fr]">
