@@ -443,7 +443,7 @@ const EconomicsPortfolio: React.FC = () => {
       items: [
         {
           title: 'Research Assistant',
-          institution: 'Research Center of Islamic Legislative Assembly, Tehran, Iran',
+          institution: 'Iran Parliament Research Center (IPRC), Tehran, Iran',
           period: '2023',
           details: [
             'Conducted empirical analysis of Iranian labor market data to inform minimum wage policy recommendations for national legislative body',
